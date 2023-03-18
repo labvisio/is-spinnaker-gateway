@@ -1,0 +1,11 @@
+{
+	"rabbitmq_uri": "amqp://guest:guest@localhost:5672",
+	"zipkin_uri" : "http://localhost:9411",
+	"camera": {
+		"id": 0,
+		"ip": "10.20.6.0",
+		"algorithm": "BILINEAR",
+		"onboard_color_processing": false,
+		"initial_config": "./etc/conf/camera_0.json"
+	}
+}

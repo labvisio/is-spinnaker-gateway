@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+enum ColorProcessingAlgorithm {
+    NOT_SPECIFIED = 0;
+    NEAREST_NEIGHBOR = 1;
+    NEAREST_NEIGHBOR_AVERAGE = 2;
+    EDGE_SENSING = 3;
+    HQ_LINEAR = 4;
+    BILINEAR = 5;
+    DIRECTIONAL_FILTER = 6;
+    WEIGHTED_DIRECTIONAL_FILTER = 7;
+    RIGOROUS = 8;
+    IPP = 9;
+}
+
+// Models the camera options and its characteristics.
+message Camera {
+    // Camera identifier.
+    uint32 id = 1;
+    // Target device (E.g.: ).
+    string ip = 2;
+    // Color processing algorithm
+    ColorProcessingAlgorithm algorithm = 3;
+    // Onboard color processing
+    bool onboard_color_processing = 4;
+    // PyTurboJPEF
+    bool use_turbojpeg = 5;
+    // Packet size
+    int32 packet_size = 6;
+    // Packet delay
+    int32 packet_delay = 7;
+    // Reverse x axis
+    bool reverse_x = 8;
+    // Reverse y axis
+    bool reverse_y = 9;
+    // Initial camera parameters
+    string initial_config = 10;
+}
+
+// Models the service behavior.
+message CameraGatewayOptions {
+    // RabbitMQ broker uri
+    string rabbitmq_uri = 1;
+    // Zipkin uri
+    string zipkin_uri = 2;
+    // Camera configurations.
+    Camera camera = 3;
+}
