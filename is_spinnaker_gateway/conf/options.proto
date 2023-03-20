@@ -29,12 +29,16 @@ message Camera {
     int32 packet_size = 6;
     // Packet delay
     int32 packet_delay = 7;
+    // Packet resend enable/disable
+    bool packet_resend = 8;
+    // Packet timeout in ms
+    int32 packet_resend_timeout = 9;
+    // Packet resend max requests
+    int32 packet_resend_max_requests = 10;
     // Reverse x axis
-    bool reverse_x = 8;
-    // Reverse y axis
-    bool reverse_y = 9;
+    bool reverse_x = 11;
     // Initial camera parameters
-    string initial_config = 10;
+    string initial_config = 12;
 }
 
 // Models the service behavior.

@@ -40,11 +40,13 @@ class CameraGateway:
         self.logger.set_critical_callback(callback=self.driver.close)
         self.driver.connect(ip=camera.ip)
 
-        self.driver.set_packet_size(packet_delay=camera.packet_size)
-        self.driver.set_packet_delay(packet_delay=camera.packet_delay)
+        self.driver.set_packet_size(camera.packet_size)
+        self.driver.set_packet_delay(camera.packet_delay)
+        self.driver.set_packet_resend(camera.packet_resend)
+        self.driver.set_packet_resend_timeout(camera.packet_resend_timeout)
+        self.driver.set_packet_resend_max_requests(camera.packet_resend_max_requests)
 
         self.driver.set_reverse_x(reverse_x=camera.reverse_x)
-        self.driver.set_reverse_y(reverse_y=camera.reverse_y)
 
     def load_json(self, path: str = "/etc/is-spinnaker-gateway/camera_0.json") -> CameraConfig:
         try:

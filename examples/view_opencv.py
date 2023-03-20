@@ -16,10 +16,9 @@ def main():
         image = driver.grab_image(wait=True)
         if image is not None:
             array = driver.to_array(image=image)
-            if image is not None:
-                cv2.imshow('frame', array)
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
+            cv2.imshow('frame', array)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
 
     driver.stop_capture()
     driver.close()

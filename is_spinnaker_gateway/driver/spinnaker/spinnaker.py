@@ -98,7 +98,7 @@ class SpinnakerDriver(CameraDriver):
 
     def make_failed_set(self, code: StatusCode, property: str, value: Any):
         if code != StatusCode.OK:
-            self._logger.critical("Cannot set '{property}' to '{value}'.")
+            self._logger.critical("Cannot set '{}' to '{}'.", property, value)
 
     def connect(self, ip: str = "10.20.6.0"):
         cam_list = self._system.GetCameras()
@@ -145,6 +145,7 @@ class SpinnakerDriver(CameraDriver):
 
                 self._logger.info("Connected to camera with IP='{}'", ip_address)
                 not_found = False
+
             i += 1
         cam_list.Clear()
 
@@ -187,7 +188,7 @@ class SpinnakerDriver(CameraDriver):
                 bgr = self._processor.Convert(image, PySpin.PixelFormat_Mono8)
             array = bgr.GetNDArray()
         else:
-            array = image.GetNdArray()
+            array = image.GetNDArray()
         image.Release()
         return array
 
@@ -198,14 +199,17 @@ class SpinnakerDriver(CameraDriver):
                 quality = int(self._compression_level * (100 - 0) + 0)
                 return Image(data=self._encoder.encode(array, quality=quality))
             else:
+                encode_format = ".jpeg"
                 params = [cv2.IMWRITE_JPEG_QUALITY, int(self._compression_level * (100 - 0) + 0)]
         elif self._encode_format == ImageFormats.Value("PNG"):
+            encode_format = ".png"
             params = [cv2.IMWRITE_PNG_COMPRESSION, int(self._compression_level * (9 - 0) + 0)]
         elif self._encode_format == ImageFormats.Value("WebP"):
+            encode_format = ".webp"
             params = [cv2.IMWRITE_WEBP_QUALITY, int(self._compression_level * (100 - 1) + 1)]
         else:
             return Image()
-        cimage = cv2.imencode(ext=self._encode_format, img=array, params=params)
+        cimage = cv2.imencode(ext=encode_format, img=array, params=params)
         return Image(data=cimage[1].tobytes())
 
     def grab_image(self, wait: bool = True) -> Union[PySpin.ImagePtr, None]:
@@ -363,3 +367,27 @@ class SpinnakerDriver(CameraDriver):
     def set_packet_delay(self, packet_delay: int) -> Status:
         code = set_op_int(self._camera.GetNodeMap(), "GevSCPD", packet_delay)
         self.make_failed_set(code, "GevSCPD", packet_delay)
+
+    def set_packet_resend(self, packet_resend: bool) -> Status:
+        code = set_op_bool(
+            self._camera.GetTLStreamNodeMap(),
+            "StreamPacketResendEnable",
+            packet_resend,
+        )
+        self.make_failed_set(code, "StreamPacketResendEnable", packet_resend)
+
+    def set_packet_resend_timeout(self, packet_resend_timeout: int) -> Status:
+        code = set_op_int(
+            self._camera.GetTLStreamNodeMap(),
+            "StreamPacketResendTimeout",
+            packet_resend_timeout,
+        )
+        self.make_failed_set(code, "StreamPacketResendTimeout", packet_resend_timeout)
+
+    def set_packet_resend_max_requests(self, packet_resend_max_requests: int) -> Status:
+        code = set_op_int(
+            self._camera.GetTLStreamNodeMap(),
+            "StreamPacketResendMaxRequests",
+            packet_resend_max_requests,
+        )
+        self.make_failed_set(code, "StreamPacketResendMaxRequests", packet_resend_max_requests)

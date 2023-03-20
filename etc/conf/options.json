@@ -6,6 +6,13 @@
 		"ip": "10.20.6.0",
 		"algorithm": "BILINEAR",
 		"onboard_color_processing": false,
+		"packet_size": 1400,
+		"packet_delay": 2000,
+		"packet_resend": true,
+		"packet_resend_timeout": 100,
+		"packet_resend_max_requests": 10000,
+		"reverse_x": false,
+		"use_turbojpeg": true,
 		"initial_config": "./etc/conf/camera_0.json"
 	}
 }

@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\'is_spinnaker_gateway/conf/options.proto\"\xf0\x01\n\x06\x43\x61mera\x12\n\n\x02id\x18\x01 \x01(\r\x12\n\n\x02ip\x18\x02 \x01(\t\x12,\n\talgorithm\x18\x03 \x01(\x0e\x32\x19.ColorProcessingAlgorithm\x12 \n\x18onboard_color_processing\x18\x04 \x01(\x08\x12\x15\n\ruse_turbojpeg\x18\x05 \x01(\x08\x12\x13\n\x0bpacket_size\x18\x06 \x01(\x05\x12\x14\n\x0cpacket_delay\x18\x07 \x01(\x05\x12\x11\n\treverse_x\x18\x08 \x01(\x08\x12\x11\n\treverse_y\x18\t \x01(\x08\x12\x16\n\x0einitial_config\x18\n \x01(\t\"Y\n\x14\x43\x61meraGatewayOptions\x12\x14\n\x0crabbitmq_uri\x18\x01 \x01(\t\x12\x12\n\nzipkin_uri\x18\x02 \x01(\t\x12\x17\n\x06\x63\x61mera\x18\x03 \x01(\x0b\x32\x07.Camera*\xe0\x01\n\x18\x43olorProcessingAlgorithm\x12\x11\n\rNOT_SPECIFIED\x10\x00\x12\x14\n\x10NEAREST_NEIGHBOR\x10\x01\x12\x1c\n\x18NEAREST_NEIGHBOR_AVERAGE\x10\x02\x12\x10\n\x0c\x45\x44GE_SENSING\x10\x03\x12\r\n\tHQ_LINEAR\x10\x04\x12\x0c\n\x08\x42ILINEAR\x10\x05\x12\x16\n\x12\x44IRECTIONAL_FILTER\x10\x06\x12\x1f\n\x1bWEIGHTED_DIRECTIONAL_FILTER\x10\x07\x12\x0c\n\x08RIGOROUS\x10\x08\x12\x07\n\x03IPP\x10\tb\x06proto3'
+  serialized_pb=b'\n\'is_spinnaker_gateway/conf/options.proto\"\xb7\x02\n\x06\x43\x61mera\x12\n\n\x02id\x18\x01 \x01(\r\x12\n\n\x02ip\x18\x02 \x01(\t\x12,\n\talgorithm\x18\x03 \x01(\x0e\x32\x19.ColorProcessingAlgorithm\x12 \n\x18onboard_color_processing\x18\x04 \x01(\x08\x12\x15\n\ruse_turbojpeg\x18\x05 \x01(\x08\x12\x13\n\x0bpacket_size\x18\x06 \x01(\x05\x12\x14\n\x0cpacket_delay\x18\x07 \x01(\x05\x12\x15\n\rpacket_resend\x18\x08 \x01(\x08\x12\x1d\n\x15packet_resend_timeout\x18\t \x01(\x05\x12\"\n\x1apacket_resend_max_requests\x18\n \x01(\x05\x12\x11\n\treverse_x\x18\x0b \x01(\x08\x12\x16\n\x0einitial_config\x18\x0c \x01(\t\"Y\n\x14\x43\x61meraGatewayOptions\x12\x14\n\x0crabbitmq_uri\x18\x01 \x01(\t\x12\x12\n\nzipkin_uri\x18\x02 \x01(\t\x12\x17\n\x06\x63\x61mera\x18\x03 \x01(\x0b\x32\x07.Camera*\xe0\x01\n\x18\x43olorProcessingAlgorithm\x12\x11\n\rNOT_SPECIFIED\x10\x00\x12\x14\n\x10NEAREST_NEIGHBOR\x10\x01\x12\x1c\n\x18NEAREST_NEIGHBOR_AVERAGE\x10\x02\x12\x10\n\x0c\x45\x44GE_SENSING\x10\x03\x12\r\n\tHQ_LINEAR\x10\x04\x12\x0c\n\x08\x42ILINEAR\x10\x05\x12\x16\n\x12\x44IRECTIONAL_FILTER\x10\x06\x12\x1f\n\x1bWEIGHTED_DIRECTIONAL_FILTER\x10\x07\x12\x0c\n\x08RIGOROUS\x10\x08\x12\x07\n\x03IPP\x10\tb\x06proto3'
 )
 
 _COLORPROCESSINGALGORITHM = _descriptor.EnumDescriptor(
@@ -83,8 +83,8 @@ _COLORPROCESSINGALGORITHM = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=378,
-  serialized_end=602,
+  serialized_start=449,
+  serialized_end=673,
 )
 _sym_db.RegisterEnumDescriptor(_COLORPROCESSINGALGORITHM)
 
@@ -160,22 +160,36 @@ _CAMERA = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='reverse_x', full_name='Camera.reverse_x', index=7,
+      name='packet_resend', full_name='Camera.packet_resend', index=7,
       number=8, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='reverse_y', full_name='Camera.reverse_y', index=8,
-      number=9, type=8, cpp_type=7, label=1,
+      name='packet_resend_timeout', full_name='Camera.packet_resend_timeout', index=8,
+      number=9, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='packet_resend_max_requests', full_name='Camera.packet_resend_max_requests', index=9,
+      number=10, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='reverse_x', full_name='Camera.reverse_x', index=10,
+      number=11, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='initial_config', full_name='Camera.initial_config', index=9,
-      number=10, type=9, cpp_type=9, label=1,
+      name='initial_config', full_name='Camera.initial_config', index=11,
+      number=12, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -193,7 +207,7 @@ _CAMERA = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=44,
-  serialized_end=284,
+  serialized_end=355,
 )
 
 
@@ -238,8 +252,8 @@ _CAMERAGATEWAYOPTIONS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=286,
-  serialized_end=375,
+  serialized_start=357,
+  serialized_end=446,
 )
 
 _CAMERA.fields_by_name['algorithm'].enum_type = _COLORPROCESSINGALGORITHM
