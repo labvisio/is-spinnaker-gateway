@@ -3,29 +3,25 @@ FROM ubuntu:22.04 as build
 ENV READTHEDOCS=True
 ENV DEBIAN_FRONTEND=teletype
 
+ENV VIRTUAL_ENV=/opt/is-spinnaker-gateway/.venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
 RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
-        apt-utils \
         gcc \
-        linux-libc-dev \
-        libc6-dev \
-        libffi-dev \
-        rustc \
         build-essential \
-        libssl-dev \
-        cargo \
         git \
         python3 \
-        python3-pip ;\
-    pip3 install --upgrade poetry; \
-    poetry config virtualenvs.in-project true;
+        python3-pip \
+        python3-venv
 
 COPY . /opt/is-spinnaker-gateway/
+
 WORKDIR /opt/is-spinnaker-gateway/
 RUN set -eux; \
-    poetry install --only main; \
-    poetry run pip install --upgrade protobuf==3.20.3
+    make venv; \
+    make build
 
 FROM ubuntu:22.04 as final
 
@@ -52,14 +48,11 @@ RUN set -eux; \
         python3; \
         apt-get clean ; rm -rf /tmp/* /var/tmp/*;
 
-WORKDIR /opt/is-spinnaker-gateway
-COPY --from=build /opt/is-spinnaker-gateway/.venv /opt/is-spinnaker-gateway/.venv
-COPY --from=build /opt/is-spinnaker-gateway/is_spinnaker_gateway /opt/is-spinnaker-gateway/is_spinnaker_gateway
-COPY --from=build /opt/is-spinnaker-gateway/etc/conf/options.json /etc/is-spinnaker-gateway/options.json
-COPY etc/spinnaker /opt/is-spinnaker-gateway/etc/spinnaker
+WORKDIR /tmp
+COPY etc/spinnaker /tmp/spinnaker
 
 RUN set -eux; \
-    cd etc/spinnaker/;\
+    cd spinnaker/;\
     echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections; \
     echo libgentl libspinnaker/accepted-flir-eula boolean true | debconf-set-selections; \
     dpkg -i libgentl_*.deb; \
@@ -75,8 +68,12 @@ RUN set -eux; \
     dpkg -i spinupdate-dev_*.deb; \
     dpkg -i spinnaker_*.deb; \
     dpkg -i spinnaker-doc_*.deb; \
-    cd ../../; \
-    rm -rf etc/
+    cd ../; \
+    rm -rf spinnaker/
+
+WORKDIR /opt/is-spinnaker-gateway
+COPY --from=build /opt/is-spinnaker-gateway/.venv /opt/is-spinnaker-gateway/.venv
+COPY --from=build /opt/is-spinnaker-gateway/etc/conf/options.json /etc/is-spinnaker-gateway/options.json
 
 ENV VIRTUAL_ENV=/opt/is-spinnaker-gateway/.venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
