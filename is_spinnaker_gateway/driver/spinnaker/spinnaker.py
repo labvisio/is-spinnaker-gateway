@@ -1,4 +1,4 @@
-from typing import Union, Tuple, List, Any
+from typing import Union, List
 
 import cv2
 import PySpin
@@ -20,6 +20,7 @@ from is_msgs.image_pb2 import (
 
 from is_spinnaker_gateway.logger import Logger
 from is_spinnaker_gateway.driver.base import CameraDriver
+from is_spinnaker_gateway.exceptions import StatusException
 from is_spinnaker_gateway.conf.options_pb2 import ColorProcessingAlgorithm
 from is_spinnaker_gateway.driver.spinnaker.utils import (
     set_op_enum,
@@ -30,20 +31,17 @@ from is_spinnaker_gateway.driver.spinnaker.utils import (
     set_op_float,
     set_op_bool,
     minmax_op_float,
+    get_value,
+    get_ratio,
 )
 
 
 class SpinnakerDriver(CameraDriver):
 
-    def __init__(self,
-                 use_turbojpeg: bool = True,
-                 compression_level: float = 0.8,
-                 onboard_color_processing: bool = False,
-                 color_algorithm: ColorProcessingAlgorithm = ColorProcessingAlgorithm.BILINEAR):
-
-        super(CameraDriver, self).__init__()
+    def __init__(self, use_turbojpeg: bool, compression_level: float,
+                 onboard_color_processing: bool, color_algorithm: ColorProcessingAlgorithm):
+        super().__init__()
         self._logger = Logger("SpinnakerDriver")
-        self._logger.set_critical_callback(callback=self.close)
         self._encoder = TurboJPEG()
         self._use_turbojpeg = use_turbojpeg
         self._compression_level = compression_level
@@ -51,8 +49,8 @@ class SpinnakerDriver(CameraDriver):
         self._encode_format = ImageFormats.Value("JPEG")
         self._onboard_color_processing = onboard_color_processing
         self._system = PySpin.System.GetInstance()
+        self._processor = PySpin.ImageProcessor()
         if not onboard_color_processing:
-            self._processor = PySpin.ImageProcessor()
             if color_algorithm == ColorProcessingAlgorithm.Value("NEAREST_NEIGHBOR"):
                 self._processor.SetColorProcessing(
                     PySpin.SPINNAKER_COLOR_PROCESSING_ALGORITHM_NEAREST_NEIGHBOR,
@@ -93,12 +91,10 @@ class SpinnakerDriver(CameraDriver):
                 self._processor.SetColorProcessing(
                     PySpin.SPINNAKER_COLOR_PROCESSING_ALGORITHM_BILINEAR,
                 )
+        else:
+            self._processor.SetColorProcessing(PySpin.SPINNAKER_COLOR_PROCESSING_ALGORITHM_NONE)
         self.running = False
         self.initied = False
-
-    def make_failed_set(self, code: StatusCode, property: str, value: Any):
-        if code != StatusCode.OK:
-            self._logger.critical("Cannot set '{}' to '{}'.", property, value)
 
     def connect(self, ip: str = "10.20.6.0"):
         cam_list = self._system.GetCameras()
@@ -112,11 +108,7 @@ class SpinnakerDriver(CameraDriver):
                 self._camera = cam_list.GetByIndex(i)
             except PySpin.SpinnakerException as ex:
                 self._logger.critical("Spinnaker Exception \n{}", ex)
-
-            code, ip_address = get_op_int(self._camera.GetTLDeviceNodeMap(), "GevDeviceIPAddress")
-            if code != StatusCode.OK:
-                self._logger.warn("Cannot get 'GevDeviceIPAddress' from camera {}.", i)
-
+            ip_address = get_op_int(self._camera.GetTLDeviceNodeMap(), "GevDeviceIPAddress")
             ip_address = self.get_ip(ip_address)
             if ip == ip_address:
                 try:
@@ -125,24 +117,13 @@ class SpinnakerDriver(CameraDriver):
                 except PySpin.SpinnakerException as ex:
                     self._logger.critical("Spinnaker Exception \n{}", ex)
 
-                code = set_op_enum(self._camera.GetNodeMap(), "UserSetSelector", "Default")
-                self.make_failed_set(code, "UserSetSelector", "Default")
+                set_op_enum(self._camera.GetNodeMap(), "UserSetSelector", "Default")
+                self._camera.UserSetLoad()
+                self._logger.info("Loaded default configuration.")
 
-                try:
-                    self._camera.UserSetLoad()
-                    self._logger.info("Loaded default configuration.")
-                except PySpin.SpinnakerException as ex:
-                    self._logger.critical("Spinnaker Exception \n{}", ex)
-
-                code = set_op_enum(self._camera.GetNodeMap(), "AcquisitionMode", "Continuous")
-                self.make_failed_set(code, "AcquisitionMode", "Continuous")
-
-                code = set_op_enum(self._camera.GetNodeMap(), "TriggerMode", "Off")
-                self.make_failed_set(code, "TriggerMode", "Off")
-
-                code = set_op_enum(self._camera.GetNodeMap(), "TriggerSelector", "FrameStart")
-                self.make_failed_set(code, "TriggerSelector", "FrameStart")
-
+                set_op_enum(self._camera.GetNodeMap(), "AcquisitionMode", "Continuous")
+                set_op_enum(self._camera.GetTLStreamNodeMap(), "StreamBufferHandlingMode",
+                            "NewestOnly")
                 self._logger.info("Connected to camera with IP='{}'", ip_address)
                 not_found = False
 
@@ -154,10 +135,15 @@ class SpinnakerDriver(CameraDriver):
         return ".".join([str(i) for i in ip_list])
 
     def close(self):
-        if self.initied:
+        try:
+            if self._camera.IsStreaming():
+                self._camera.EndAcquisition()
             self._camera.DeInit()
             del self._camera
-        self._system.ReleaseInstance()
+            if not self._system.IsInUse():
+                self._system.ReleaseInstance()
+        except PySpin.SpinnakerException:
+            pass
 
     @staticmethod
     def int2base(x: int, base: int) -> List[int]:
@@ -171,14 +157,12 @@ class SpinnakerDriver(CameraDriver):
         return digits
 
     def start_capture(self):
-        if not self.running:
+        if not self._camera.IsStreaming():
             self._camera.BeginAcquisition()
-            self.running = True
 
     def stop_capture(self):
-        if self.running:
+        if self._camera.IsStreaming():
             self._camera.EndAcquisition()
-        self.running = False
 
     def to_array(self, image: PySpin.ImagePtr) -> np.ndarray:
         if not self._onboard_color_processing:
@@ -195,7 +179,7 @@ class SpinnakerDriver(CameraDriver):
     def to_image(self, image: PySpin.ImagePtr) -> Image:
         array = self.to_array(image=image)
         if self._encode_format == ImageFormats.Value("JPEG"):
-            if self._use_turbojpeg:
+            if self._use_turbojpeg and self._color_space == ColorSpaces.Value("RGB"):
                 quality = int(self._compression_level * (100 - 0) + 0)
                 return Image(data=self._encoder.encode(array, quality=quality))
             else:
@@ -228,63 +212,51 @@ class SpinnakerDriver(CameraDriver):
             self._logger.warn('Spinnaker Exception: {}.', ex)
             return None
 
-    def get_sampling_rate(self) -> Tuple[Status, FloatValue]:
-        code, value = get_op_float(self._camera.GetNodeMap(), "AcquisitionFrameRate")
+    def get_sampling_rate(self) -> FloatValue:
+        value = get_op_float(self._camera.GetNodeMap(), "AcquisitionFrameRate")
         rate = FloatValue()
         rate.value = value
-        return Status(code=code), rate
+        return rate
 
-    def set_sampling_rate(self, sampling_rate: FloatValue) -> Status:
-        code = set_op_enum(self._camera.GetNodeMap(), "AcquisitionFrameRateAuto", "Off")
-        if code != StatusCode.OK:
-            return Status(
-                code=code,
-                why="Failed to set 'AcquisitionFrameRateAuto' to 'Off'.",
-            )
-        code = set_op_bool(self._camera.GetNodeMap(), "AcquisitionFrameRateEnabled", True)
-        if code != StatusCode.OK:
-            return Status(
-                code=code,
-                why="Failed to set 'AcquisitionFrameRateEnabled' to 'True'.",
-            )
-        code = set_op_float(self._camera.GetNodeMap(), "AcquisitionFrameRate", sampling_rate.value)
-        if code != StatusCode.OK:
-            return Status(
-                code=code,
-                why=f"Failed to set 'AcquisitionFrameRate' to '{sampling_rate.value}'.",
-            )
-        return Status(code=StatusCode.OK)
+    def set_sampling_rate(self, sampling_rate: FloatValue):
+        set_op_enum(self._camera.GetNodeMap(), "AcquisitionFrameRateAuto", "Off")
+        set_op_bool(self._camera.GetNodeMap(), "AcquisitionFrameRateEnabled", True)
+        set_op_float(self._camera.GetNodeMap(), "AcquisitionFrameRate", sampling_rate.value)
 
-    def get_color_space(self) -> Tuple[Status, ColorSpace]:
+    def get_color_space(self) -> ColorSpace:
         color_space = ColorSpace()
         color_space.value = self._color_space
-        return Status(code=StatusCode.OK), color_space
+        return color_space
 
-    def set_color_space(self, color_space: ColorSpace) -> Status:
-        if color_space.value == ColorSpaces.Value("RGB"):
-            self._color_space = color_space.value
-            if self._onboard_color_processing:
-                code = set_op_enum(self._camera.GetNodeMap(), "PixelFormat", "RGB8Packed")
-                return Status(code=code, why="Failed to set 'PixelFormat' to 'RGB8Packed'.")
+    def set_color_space(self, color_space: ColorSpace):
+        if not self._camera.IsStreaming():
+            if color_space.value == ColorSpaces.Value("RGB"):
+                self._color_space = color_space.value
+                if self._onboard_color_processing:
+                    set_op_enum(self._camera.GetNodeMap(), "PixelFormat", "RGB8Packed")
+                else:
+                    set_op_enum(self._camera.GetNodeMap(), "PixelFormat", "BayerRG8")
+            elif color_space.value == ColorSpaces.Value("GRAY"):
+                set_op_enum(self._camera.GetNodeMap(), "PixelFormat", "Mono8")
+                self._color_space = ColorSpaces.Value("GRAY")
             else:
-                code = set_op_enum(self._camera.GetNodeMap(), "PixelFormat", "BayerRG8")
-                return Status(code=code, why="Failed to set 'PixelFormat' to 'BayerRG8'.")
-        elif color_space.value == ColorSpaces.Value("GRAY"):
-            code = set_op_enum(self._camera.GetNodeMap(), "PixelFormat", "Mono8")
-            return Status(code=code, why="Failed to set 'PixelFormat' to 'Mono8'.")
+                raise StatusException(
+                    code=StatusCode.FAILED_PRECONDITION,
+                    message="'ColorSpace' property only accept RGB or GRAY values.",
+                )
         else:
-            return Status(
-                code=StatusCode.FAILED_PRECONDITION,
-                why="'ColorSpace' property only accept RGB or GRAY values.",
+            raise StatusException(
+                code=StatusCode.PERMISSION_DENIED,
+                message="'ColorSpace' property cannot be modify during streaming.",
             )
 
-    def get_format(self) -> Tuple[Status, ImageFormat]:
+    def get_format(self) -> ImageFormat:
         image_format = ImageFormat()
         image_format.format = self._encode_format
         image_format.compression.value = self._compression_level
-        return Status(code=StatusCode.OK), image_format
+        return image_format
 
-    def set_format(self, image_format: ImageFormat) -> Status:
+    def set_format(self, image_format: ImageFormat):
         if image_format.format == ImageFormats.Value("JPEG"):
             self._encode_format = ImageFormats.Value("JPEG")
         elif image_format.format == ImageFormats.Value("PNG"):
@@ -292,102 +264,62 @@ class SpinnakerDriver(CameraDriver):
         elif image_format.format == ImageFormats.Value("WebP"):
             self._encode_format = ImageFormats.Value("WebP")
         else:
-            return Status(
+            return StatusException(
                 code=StatusCode.FAILED_PRECONDITION,
-                why="'ImageFormat' property only accept JPEG, PNG or WebP values.",
+                message="'ImageFormat' property only accept JPEG, PNG or WebP values.",
             )
         if image_format.compression.value > 0 and image_format.compression.value < 1:
             self._compression_level = image_format.compression.value
-            return Status(code=StatusCode.OK)
         else:
-            return Status(
+            return StatusException(
                 code=StatusCode.FAILED_PRECONDITION,
-                why="Compression value must be greater than zero and less than one.",
+                message="Compression value must be greater than zero and less than one.",
             )
 
-    def get_resolution(self) -> Tuple[Status, Resolution]:
+    def get_resolution(self) -> Resolution:
         resolution = Resolution()
-        code, width = get_op_int(self._camera.GetNodeMap(), "Width")
-        if code != StatusCode.OK:
-            return Status(code=code, why="Failed to get 'Width' property."), resolution
-        code, height = get_op_int(self._camera.GetNodeMap(), "Width")
-        if code != StatusCode.OK:
-            return Status(code=code, why="Failed to get 'Height' property."), resolution
+        width = get_op_int(self._camera.GetNodeMap(), "Width")
+        height = get_op_int(self._camera.GetNodeMap(), "Width")
         resolution.width = width
         resolution.height = height
-        return Status(code=StatusCode.OK), resolution
+        return resolution
 
-    def set_gain(self, gain: CameraSetting) -> Status:
+    def set_gain(self, gain: CameraSetting):
         if gain.automatic:
-            code = set_op_enum(self._camera.GetNodeMap(), "GainAuto", "Continuous")
-            return Status(code=code)
+            set_op_enum(self._camera.GetNodeMap(), "GainAuto", "Continuous")
         else:
-            code = set_op_enum(self._camera.GetNodeMap(), "GainAuto", "Off")
-            if code != StatusCode.OK:
-                return Status(code=code, why="Failed to set 'GainAuto' to 'Off'.")
-            code, value_range = minmax_op_float(self._camera.GetNodeMap(), "Gain")
-            if code != StatusCode.OK:
-                return Status(code=code, why="Failed to get 'Gain' property.")
-            value = (gain.ratio * (value_range[1] - value_range[0]) / 100) + value_range[0]
-            code = set_op_float(self._camera.GetNodeMap(), "Gain", value)
-            if code != StatusCode.OK:
-                return Status(code=code, why=f"Failed to set 'Gain' to {value}.")
-            return Status(code=StatusCode.OK)
+            set_op_enum(self._camera.GetNodeMap(), "GainAuto", "Off")
+            value_range = minmax_op_float(self._camera.GetNodeMap(), "Gain")
+            value = get_value(gain.ratio, value_range[0], value_range[1])
+            set_op_float(self._camera.GetNodeMap(), "Gain", value)
 
-    def get_gain(self) -> Tuple[Status, CameraSetting]:
+    def get_gain(self) -> CameraSetting:
         setting = CameraSetting()
-        code, auto = get_op_enum(self._camera.GetNodeMap(), "GainAuto")
-        if code != StatusCode.OK:
-            return setting, Status(code=code, why="Failed to get 'GainAuto' property")
+        auto = get_op_enum(self._camera.GetNodeMap(), "GainAuto")
         if auto == "Continuous":
             setting.automatic = True
         else:
             setting.automatic = False
-        code, value = get_op_float(self._camera.GetNodeMap(), "Gain")
-        if code != StatusCode.OK:
-            return Status(code=code, why=f"Failed to set 'Gain' to '{value}'"), setting
-        code, value_range = minmax_op_float(self._camera.GetNodeMap(), "Gain")
-        if code != StatusCode.OK:
-            return Status(code=code, why="Failed to get 'Gain' property"), setting
-        setting.ratio = ((value - value_range[0]) * 100) / (value_range[1] - value_range[0])
-        return Status(code=StatusCode.OK), setting
-
-    def set_reverse_y(self, reverse_y: bool) -> Status:
-        code = set_op_bool(self._camera.GetNodeMap(), "ReverseY", reverse_y)
-        self.make_failed_set(code, "ReverseY", reverse_y)
+        value = get_op_float(self._camera.GetNodeMap(), "Gain")
+        value_range = minmax_op_float(self._camera.GetNodeMap(), "Gain")
+        setting.ratio = get_ratio(value, value_range[0], value_range[1])
+        return setting
 
     def set_reverse_x(self, reverse_x: bool) -> Status:
-        code = set_op_bool(self._camera.GetNodeMap(), "ReverseX", reverse_x)
-        self.make_failed_set(code, "ReverseX", reverse_x)
+        set_op_bool(self._camera.GetNodeMap(), "ReverseX", reverse_x)
 
     def set_packet_size(self, packet_size: int) -> Status:
-        code = set_op_int(self._camera.GetNodeMap(), "GevSCPSPacketSize", packet_size)
-        self.make_failed_set(code, "GevSCPSPacketSize", packet_size)
+        set_op_int(self._camera.GetNodeMap(), "GevSCPSPacketSize", packet_size)
 
     def set_packet_delay(self, packet_delay: int) -> Status:
-        code = set_op_int(self._camera.GetNodeMap(), "GevSCPD", packet_delay)
-        self.make_failed_set(code, "GevSCPD", packet_delay)
+        set_op_int(self._camera.GetNodeMap(), "GevSCPD", packet_delay)
 
     def set_packet_resend(self, packet_resend: bool) -> Status:
-        code = set_op_bool(
-            self._camera.GetTLStreamNodeMap(),
-            "StreamPacketResendEnable",
-            packet_resend,
-        )
-        self.make_failed_set(code, "StreamPacketResendEnable", packet_resend)
+        set_op_bool(self._camera.GetTLStreamNodeMap(), "StreamPacketResendEnable", packet_resend)
 
-    def set_packet_resend_timeout(self, packet_resend_timeout: int) -> Status:
-        code = set_op_int(
-            self._camera.GetTLStreamNodeMap(),
-            "StreamPacketResendTimeout",
-            packet_resend_timeout,
-        )
-        self.make_failed_set(code, "StreamPacketResendTimeout", packet_resend_timeout)
+    def set_packet_resend_timeout(self, timeout: int) -> Status:
+        set_op_int(self._camera.GetTLStreamNodeMap(), "StreamPacketResendTimeout", timeout)
 
-    def set_packet_resend_max_requests(self, packet_resend_max_requests: int) -> Status:
-        code = set_op_int(
-            self._camera.GetTLStreamNodeMap(),
-            "StreamPacketResendMaxRequests",
-            packet_resend_max_requests,
-        )
-        self.make_failed_set(code, "StreamPacketResendMaxRequests", packet_resend_max_requests)
+    def set_packet_resend_max_requests(self, max_requests: int) -> Status:
+        set_op_int(self._camera.GetTLStreamNodeMap(), "StreamPacketResendMaxRequests",
+                   max_requests)

@@ -1,10 +1,10 @@
 {
 	"rabbitmq_uri": "amqp://guest:guest@localhost:5672",
-	"zipkin_uri" : "http://localhost:9411",
+	"zipkin_uri": "http://localhost:9411",
 	"camera": {
 		"id": 0,
 		"ip": "10.20.6.0",
-		"algorithm": "BILINEAR",
+		"algorithm": "WEIGHTED_DIRECTIONAL_FILTER",
 		"onboard_color_processing": false,
 		"packet_size": 1400,
 		"packet_delay": 2000,
@@ -13,6 +13,25 @@
 		"packet_resend_max_requests": 10000,
 		"reverse_x": false,
 		"use_turbojpeg": true,
-		"initial_config": "./etc/conf/camera_0.json"
+		"initial_config": {
+			"sampling": {
+				"frequency": 10.0
+			},
+			"image": {
+				"color_space": {
+					"value": "RGB"
+				},
+				"format": {
+					"format": "JPEG",
+					"compression": 0.8
+				}
+			},
+			"camera": {
+				"gain": {
+					"automatic": true,
+					"ratio": 0.5
+				}
+			}
+		}
 	}
 }

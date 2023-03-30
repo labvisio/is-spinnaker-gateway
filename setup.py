@@ -7,14 +7,12 @@ package_name = 'is_spinnaker_gateway'
 
 setup(
     name=package_name,
-    version='0.1.1',
-    packages=find_packages(
-        exclude=[
-            "tests*",
-            "examples*",
-            "etc*",
-        ],
-    ),
+    version='0.1.2',
+    packages=find_packages(exclude=[
+        "tests*",
+        "examples*",
+        "etc*",
+    ]),
     install_requires=[
         'setuptools',
         'wheel',
@@ -30,7 +28,8 @@ setup(
         'opencensus-ext-zipkin==0.2.1',
         'python-dateutil==2.8.0',
         'pyturbojpeg @ git+https://github.com/lilohuang/PyTurboJPEG.git',
-        'spinnaker-python @ file://localhost/{}/{}'.format(os.getcwd(), glob.glob('etc/spinnaker/*.whl')[0]),
+        'spinnaker-python @ file://localhost/{}/{}'.format(os.getcwd(),
+                                                           glob.glob('etc/spinnaker/*.whl')[0]),
     ],
     zip_safe=False,
     author=['Luiz Carlos Cosmi Filho'],

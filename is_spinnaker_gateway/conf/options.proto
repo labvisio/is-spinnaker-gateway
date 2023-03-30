@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "is/msgs/camera.proto";
+
 // List of color processing algorithms that can be used to build an RGB inside this service.
 enum ColorProcessingAlgorithm {
     NOT_SPECIFIED = 0;
@@ -70,7 +72,7 @@ message Camera {
     bool reverse_x = 11;
     /* Initial config: Path to json the has initial camera configurations.
      */
-    string initial_config = 12;
+    is.vision.CameraConfig initial_config = 12;
 }
 
 // Models the service behavior.

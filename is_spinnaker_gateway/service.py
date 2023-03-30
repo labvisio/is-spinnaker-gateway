@@ -8,9 +8,8 @@ from is_spinnaker_gateway.gateway import CameraGateway
 from is_spinnaker_gateway.conf.options_pb2 import CameraGatewayOptions
 
 
-def load_json(
-        logger: Logger,
-        path: str = "/etc/is-spinnaker-gateway/options.json") -> CameraGatewayOptions:
+def load_json(logger: Logger,
+              path: str = "/etc/is-spinnaker-gateway/options.json") -> CameraGatewayOptions:
     try:
         with open(path, 'r') as f:
             try:
@@ -42,8 +41,7 @@ def main():
         zipkin_uri=options.zipkin_uri,
         camera=options.camera,
     )
-    while True:
-        gateway.run()
+    gateway.run()
 
 
 if __name__ == "__main__":
