@@ -62,14 +62,14 @@ install: venv
 	@. .venv/bin/activate && (\
     	pip3 install .[dev]; \
     	pip3 install --upgrade protobuf==3.20.3 \
-    )
+	)
 
 venv:
 	: # Create venv if it doesn't exist
 	test -d .venv || python3 -m venv .venv
 	@. .venv/bin/activate && (\
     	pip3 install --upgrade pip wheel \
-    )
+	)
 
 build:
 	: # determine if we are in venv,
