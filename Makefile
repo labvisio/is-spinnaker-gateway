@@ -60,15 +60,15 @@ all: install build test lint
 install: venv
 	: # Activate venv and install something inside
 	@. .venv/bin/activate && (\
-      pip3 install .[dev]; \
-      pip3 install --upgrade protobuf==3.20.3 \
+    	pip3 install .[dev]; \
+    	pip3 install --upgrade protobuf==3.20.3 \
     )
 
 venv:
 	: # Create venv if it doesn't exist
 	test -d .venv || python3 -m venv .venv
 	@. .venv/bin/activate && (\
-      pip3 install --upgrade pip wheel \
+    	pip3 install --upgrade pip wheel \
     )
 
 build:
@@ -99,6 +99,10 @@ run:
 	)
 
 proto:
-	@protoc -I=. --python_out=. ./is_spinnaker_gateway/conf/options.proto
+	@. .venv/bin/activate && (\
+    	cd is_spinnaker_gateway/conf/; \
+    	python3 -m is_msgs.utils.build options.proto; \
+		cd ../../ \
+	)
 
 .PHONY: help clean-pyc clean-docker image push login install venv build test lint all run proto
