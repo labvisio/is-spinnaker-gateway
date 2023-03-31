@@ -1,5 +1,6 @@
-USER := luizcarloscf
+USER := labvisio
 IMAGE := is-spinnaker-gateway
+VERSION := 0.1.2
 PYTHON := python3
 SHELL := /bin/bash
 

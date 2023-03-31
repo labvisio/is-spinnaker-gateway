@@ -8,14 +8,23 @@ package_name = 'is_spinnaker_gateway'
 setup(
     name=package_name,
     version='0.1.2',
+    description='Gateway for BlackFly GigE camera models using Spinnaker SDK.',
+    long_description=open("README.md").read().strip(),
+    long_description_content_type="text/markdown",
+    keywords=['spinnaker', 'blackfly', 'camera', 'gateway'],
+    license='MIT',
     packages=find_packages(exclude=[
         "tests*",
         "examples*",
         "etc*",
     ]),
+    url="https://github.com/labvisio/is-spinnaker-gateway",
+    project_urls={
+        "Changes": "https://github.com/labvisio/is-spinnaker-gateway/releases",
+        "Code": "https://github.com/labvisio/is-spinnaker-gateway",
+        "Issue tracker": "https://github.com/labvisio/is-spinnaker-gateway/issues",
+    },
     install_requires=[
-        'setuptools',
-        'wheel',
         'is_msgs==1.1.10',
         'is_wire==1.2.0',
         'vine==1.3.0',
@@ -32,19 +41,13 @@ setup(
                                                            glob.glob('etc/spinnaker/*.whl')[0]),
     ],
     zip_safe=False,
-    author=['Luiz Carlos Cosmi Filho'],
-    author_email=['luiz.cosmi@edu.ufes.br'],
-    maintainer='Luiz Carlos Cosmi Filho',
-    maintainer_email='luiz.cosmi@edu.ufes.br',
-    keywords=['spinnaker', 'blackfly', 'camera', 'gateway'],
+    author=['LabVISIO'],
+    author_email=['labvisio.ufes@gmail.com'],
     classifiers=[
         'Intended Audience :: Developers',
         'Programming Language :: Python :: 3'
-        'Programming Language :: Python :: 3 :: Only'
-        'Topic :: Software Development',
+        'Programming Language :: Python :: 3 :: Only',
     ],
-    description='Camera gateway using Spinnaker SDK to integrate Blackfly GigE cameras.',
-    license='Apache License, Version 2.0',
     extras_require={
         'dev': [
             'pytest==7.2.1',

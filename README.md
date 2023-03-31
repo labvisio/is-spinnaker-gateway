@@ -28,7 +28,12 @@ Then, extract and move all `.deb` and `*.whl` into `etc/spinnaker/` folder.
 
 Once you have the necessary files for the camera driver at `etc/spinnaker/`, to build the docker image just run:
 ```bash
-make image VERSION=test
+make image
+```
+
+You can also build the image with your user and the version you want:
+```bash
+make image USER=luizcarloscf VERSION=0.1.3-beta
 ```
 
 ## Usefull resources and links
