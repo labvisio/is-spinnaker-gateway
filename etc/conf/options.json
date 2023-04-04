@@ -13,6 +13,7 @@
 		"packet_resend_max_requests": 10000,
 		"reverse_x": false,
 		"use_turbojpeg": true,
+		"restart_period": 3600,
 		"initial_config": {
 			"sampling": {
 				"frequency": 10.0
@@ -28,8 +29,7 @@
 			},
 			"camera": {
 				"gain": {
-					"automatic": true,
-					"ratio": 0.5
+					"automatic": true
 				}
 			}
 		}

@@ -279,7 +279,7 @@ class SpinnakerDriver(CameraDriver):
     def get_resolution(self) -> Resolution:
         resolution = Resolution()
         width = get_op_int(self._camera.GetNodeMap(), "Width")
-        height = get_op_int(self._camera.GetNodeMap(), "Width")
+        height = get_op_int(self._camera.GetNodeMap(), "Height")
         resolution.width = width
         resolution.height = height
         return resolution
@@ -300,9 +300,9 @@ class SpinnakerDriver(CameraDriver):
             setting.automatic = True
         else:
             setting.automatic = False
-        value = get_op_float(self._camera.GetNodeMap(), "Gain")
-        value_range = minmax_op_float(self._camera.GetNodeMap(), "Gain")
-        setting.ratio = get_ratio(value, value_range[0], value_range[1])
+            value = get_op_float(self._camera.GetNodeMap(), "Gain")
+            value_range = minmax_op_float(self._camera.GetNodeMap(), "Gain")
+            setting.ratio = get_ratio(value, value_range[0], value_range[1])
         return setting
 
     def set_reverse_x(self, reverse_x: bool) -> Status:

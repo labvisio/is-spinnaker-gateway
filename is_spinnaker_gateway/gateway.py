@@ -27,25 +27,25 @@ class CameraGateway:
 
     def __init__(self, logger: Logger, broker_uri: str, zipkin_uri: str, camera: Camera):
         self.logger = logger
-        self.id = camera.id
+        self.camera = camera
         self.broker_uri = broker_uri
         self.zipkin_uri = zipkin_uri
-        self.config = camera.initial_config
+        self.config = self.camera.initial_config
         self.driver = SpinnakerDriver(
             compression_level=0.8,
-            use_turbojpeg=camera.use_turbojpeg,
-            color_algorithm=camera.algorithm,
-            onboard_color_processing=camera.onboard_color_processing,
+            use_turbojpeg=self.camera.use_turbojpeg,
+            color_algorithm=self.camera.algorithm,
+            onboard_color_processing=self.camera.onboard_color_processing,
         )
-        self.driver.connect(ip=camera.ip)
+        self.restart_period = self.camera.restart_period
+        self.driver.connect(ip=self.camera.ip)
 
-        self.driver.set_reverse_x(reverse_x=camera.reverse_x)
-
-        self.driver.set_packet_size(camera.packet_size)
-        self.driver.set_packet_delay(camera.packet_delay)
-        self.driver.set_packet_resend(camera.packet_resend)
-        self.driver.set_packet_resend_timeout(camera.packet_resend_timeout)
-        self.driver.set_packet_resend_max_requests(camera.packet_resend_max_requests)
+        self.driver.set_reverse_x(reverse_x=self.camera.reverse_x)
+        self.driver.set_packet_size(self.camera.packet_size)
+        self.driver.set_packet_delay(self.camera.packet_delay)
+        self.driver.set_packet_resend(self.camera.packet_resend)
+        self.driver.set_packet_resend_timeout(self.camera.packet_resend_timeout)
+        self.driver.set_packet_resend_max_requests(self.camera.packet_resend_max_requests)
 
     def get_config(self, field_selector: FieldSelector, ctx: Context) -> CameraConfig:
         fields = field_selector.fields
@@ -208,6 +208,30 @@ class CameraGateway:
         except StatusException as ex:
             return ex.status
 
+    def restart(self):
+        self.driver.stop_capture()
+        self.driver.close()
+        del self.driver
+        self.driver = SpinnakerDriver(
+            compression_level=0.8,
+            use_turbojpeg=self.camera.use_turbojpeg,
+            color_algorithm=self.camera.algorithm,
+            onboard_color_processing=self.camera.onboard_color_processing,
+        )
+        self.driver.connect(ip=self.camera.ip)
+        self.driver.set_reverse_x(reverse_x=self.camera.reverse_x)
+        self.driver.set_packet_size(self.camera.packet_size)
+        self.driver.set_packet_delay(self.camera.packet_delay)
+        self.driver.set_packet_resend(self.camera.packet_resend)
+        self.driver.set_packet_resend_timeout(self.camera.packet_resend_timeout)
+        self.driver.set_packet_resend_max_requests(self.camera.packet_resend_max_requests)
+
+        maybe_ok = self.set_config(config=self.config, ctx=None)
+        if isinstance(maybe_ok, Status):
+            self.logger.critical("Failed to set initial configuration.\n \
+                                  Code={}, why={}".format(maybe_ok.code, maybe_ok.why))
+        self.driver.start_capture()
+
     def get_zipkin(self, uri: str) -> Tuple[str, str]:
         zipkin_ok = re.match("http:\\/\\/([a-zA-Z0-9\\.]+)(:(\\d+))?", uri)
         if not zipkin_ok:
@@ -241,31 +265,38 @@ class CameraGateway:
 
         server = ServiceProvider(channel=rpc_channel)
         logging = LogInterceptor()
+        logging.log.logger.propagate = False
         tracing = TracingInterceptor(exporter=exporter)
         server.add_interceptor(interceptor=logging)
         server.add_interceptor(interceptor=tracing)
         server.delegate(
-            topic="{}.{}.GetConfig".format(service_name, self.id),
+            topic="{}.{}.GetConfig".format(service_name, self.camera.id),
             request_type=FieldSelector,
             reply_type=CameraConfig,
             function=self.get_config,
         )
         server.delegate(
-            topic="{}.{}.SetConfig".format(service_name, self.id),
+            topic="{}.{}.SetConfig".format(service_name, self.camera.id),
             request_type=CameraConfig,
             reply_type=Empty,
             function=self.set_config,
         )
         self.logger.info("RPC listening for requests")
         self.driver.start_capture()
+
+        timeout = time.perf_counter() + self.camera.restart_period
         while True:
+            now = time.perf_counter()
+            if now >= timeout:
+                self.restart()
+                timeout = time.perf_counter() + self.camera.restart_period
             image = self.driver.grab_image()
             if image is not None:
                 tracer = Tracer(exporter=exporter)
                 span = None
                 with tracer.span(name="frame") as _span:
                     message = Message()
-                    message.topic = "{}.{}.Frame".format(service_name, self.id)
+                    message.topic = "{}.{}.Frame".format(service_name, self.camera.id)
                     message.pack(self.driver.to_image(image))
                     message.inject_tracing(_span)
                     span = _span
