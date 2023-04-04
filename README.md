@@ -1,5 +1,9 @@
 # is-spinnaker-gateway
 
+[![Docker image tag](https://img.shields.io/docker/v/labvisio/is-spinnaker-gateway?sort=semver&style=flat-square)](https://hub.docker.com/r/labvisio/is-spinnaker-gateway/tags)
+[![Docker image size](https://img.shields.io/docker/image-size/labvisio/is-spinnaker-gateway?sort=semver&style=flat-square)](https://hub.docker.com/r/labvisio/is-spinnaker-gateway)
+[![Docker pulls](https://img.shields.io/docker/pulls/labvisio/is-spinnaker-gateway?style=flat-square)](https://hub.docker.com/r/labvisio/is-spinnaker-gateway)
+
 This repository contains a implementation of a camera gateway for [BlackFly GigE] camera models using [Spinnaker SDK]. All messages used are defined in [is-msgs] and [is-wire-py] package is used to implement the pub/sub middleware for the Inteligent Space architecture.
 
 <p align="center">
