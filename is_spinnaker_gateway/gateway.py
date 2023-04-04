@@ -209,6 +209,10 @@ class CameraGateway:
             return ex.status
 
     def restart(self):
+        # get current configuration
+        selector = FieldSelector(fields=[CameraConfigFields.Value("ALL")])
+        config = self.get_config(field_selector=selector, ctx=None)
+        # stop and restart driver
         self.driver.stop_capture()
         self.driver.close()
         del self.driver
@@ -225,10 +229,10 @@ class CameraGateway:
         self.driver.set_packet_resend(self.camera.packet_resend)
         self.driver.set_packet_resend_timeout(self.camera.packet_resend_timeout)
         self.driver.set_packet_resend_max_requests(self.camera.packet_resend_max_requests)
-
-        maybe_ok = self.set_config(config=self.config, ctx=None)
+        # apply last configuration
+        maybe_ok = self.set_config(config=config, ctx=None)
         if isinstance(maybe_ok, Status):
-            self.logger.critical("Failed to set initial configuration.\n \
+            self.logger.critical("Failed to set previous configuration.\n \
                                   Code={}, why={}".format(maybe_ok.code, maybe_ok.why))
         self.driver.start_capture()
 

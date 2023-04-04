@@ -15,7 +15,6 @@ from is_msgs.image_pb2 import (
     ColorSpaces,
     ImageFormat,
     ImageFormats,
-    Resolution,
 )
 
 from is_spinnaker_gateway.logger import Logger
@@ -276,13 +275,13 @@ class SpinnakerDriver(CameraDriver):
                 message="Compression value must be greater than zero and less than one.",
             )
 
-    def get_resolution(self) -> Resolution:
-        resolution = Resolution()
-        width = get_op_int(self._camera.GetNodeMap(), "Width")
-        height = get_op_int(self._camera.GetNodeMap(), "Height")
-        resolution.width = width
-        resolution.height = height
-        return resolution
+    # def get_resolution(self) -> Resolution:
+    #     resolution = Resolution()
+    #     width = get_op_int(self._camera.GetNodeMap(), "Width")
+    #     height = get_op_int(self._camera.GetNodeMap(), "Height")
+    #     resolution.width = width
+    #     resolution.height = height
+    #     return resolution
 
     def set_gain(self, gain: CameraSetting):
         if gain.automatic:
