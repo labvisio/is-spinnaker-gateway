@@ -263,14 +263,14 @@ class SpinnakerDriver(CameraDriver):
         elif image_format.format == ImageFormats.Value("WebP"):
             self._encode_format = ImageFormats.Value("WebP")
         else:
-            return StatusException(
+            raise StatusException(
                 code=StatusCode.FAILED_PRECONDITION,
                 message="'ImageFormat' property only accept JPEG, PNG or WebP values.",
             )
         if image_format.compression.value > 0 and image_format.compression.value < 1:
             self._compression_level = image_format.compression.value
         else:
-            return StatusException(
+            raise StatusException(
                 code=StatusCode.FAILED_PRECONDITION,
                 message="Compression value must be greater than zero and less than one.",
             )
