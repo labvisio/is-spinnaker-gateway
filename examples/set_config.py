@@ -8,7 +8,7 @@ from is_msgs.camera_pb2 import CameraConfig
 
 
 def main():
-    channel = Channel(uri="amqp://guest:guest@10.20.5.2:30000")
+    channel = Channel(uri="amqp://guest:guest@localhost:5672")
     subscription = Subscription(channel)
     config = CameraConfig()
     config.image.format.format = ImageFormats.Value("JPEG")
