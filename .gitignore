@@ -52,6 +52,5 @@ venv.bak/
 
 # Spinnaker wheel
 *.whl
-
-# Spinnaker .deb
 *.deb
+*.tar.gz

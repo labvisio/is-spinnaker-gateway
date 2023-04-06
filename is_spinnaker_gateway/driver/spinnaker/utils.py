@@ -11,107 +11,178 @@ from PySpin import (
     CBooleanPtr,
     CIntegerPtr,
     CEnumerationPtr,
+    SpinnakerException,
 )
 
-
-def is_readable(node: INode) -> bool:
-    return IsReadable(node) and IsAvailable(node)
+from is_spinnaker_gateway.exceptions import StatusException
 
 
-def is_writible(node: INode) -> bool:
-    return IsWritable(node) and IsAvailable(node)
+def is_readable(node: INode):
+    if not IsAvailable(node):
+        raise StatusException(
+            code=StatusCode.INTERNAL_ERROR,
+            message=f"Property '{node.GetName()}' not available.",
+        )
+    if not IsReadable(node):
+        raise StatusException(
+            code=StatusCode.INTERNAL_ERROR,
+            message=f"Property '{node.GetName()}' not readable.",
+        )
 
 
-def get_op_bool(node_map: INodeMap, name: str) -> Tuple[StatusCode, bool]:
+def is_writible(node: INode):
+    if not IsAvailable(node):
+        raise StatusException(
+            code=StatusCode.INTERNAL_ERROR,
+            message=f"Property '{node.GetName()}' not available.",
+        )
+    if not IsWritable(node):
+        raise StatusException(
+            code=StatusCode.INTERNAL_ERROR,
+            message=f"Property '{node.GetName()}' not writable.",
+        )
+
+
+def get_op_bool(node_map: INodeMap, name: str) -> bool:
     node = CBooleanPtr(node_map.GetNode(name))
-    if is_readable(node):
-        return StatusCode.OK, node.GetValue()
-    else:
-        return StatusCode.INTERNAL_ERROR, False
+    is_readable(node)
+    try:
+        return node.GetValue()
+    except SpinnakerException as ex:
+        raise StatusException(
+            code=StatusCode.INTERNAL_ERROR,
+            message=f"Failed to get property '{name}'",
+        ) from ex
 
 
-def set_op_bool(node_map: INodeMap, name: str, value: bool) -> StatusCode:
+def set_op_bool(node_map: INodeMap, name: str, value: bool):
     node = CBooleanPtr(node_map.GetNode(name))
-    if is_writible(node):
+    is_writible(node)
+    try:
         node.SetValue(value)
-        return StatusCode.OK
-    else:
-        return StatusCode.INTERNAL_ERROR
+    except SpinnakerException as ex:
+        raise StatusException(
+            code=StatusCode.INTERNAL_ERROR,
+            message=f"Failed to set property '{name}' to '{value}'",
+        ) from ex
 
 
-def get_op_int(node_map: INodeMap, name: str) -> Tuple[StatusCode, int]:
+def get_op_int(node_map: INodeMap, name: str) -> int:
     node = CIntegerPtr(node_map.GetNode(name))
-    if is_readable(node):
-        return StatusCode.OK, node.GetValue()
-    else:
-        return StatusCode.INTERNAL_ERROR, 0
+    is_readable(node)
+    try:
+        return node.GetValue()
+    except SpinnakerException as ex:
+        raise StatusException(
+            code=StatusCode.INTERNAL_ERROR,
+            message=f"Failed to get property '{name}'",
+        ) from ex
 
 
-def set_op_int(node_map: INodeMap, name: str, value: int) -> StatusCode:
+def set_op_int(node_map: INodeMap, name: str, value: int):
     node = CIntegerPtr(node_map.GetNode(name))
-    if is_writible(node):
-        min_value = node.GetMin()
-        max_value = node.GetMax()
-        if (value < min_value) or (value > max_value):
-            return StatusCode.FAILED_PRECONDITION
-        else:
+    is_writible(node)
+    min_value = node.GetMin()
+    max_value = node.GetMax()
+    if (value < min_value) or (value > max_value):
+        raise StatusException(
+            code=StatusCode.FAILED_PRECONDITION,
+            message=f"Property '{name}' must be in interval [{min_value}, {max_value}]",
+        )
+    else:
+        try:
             node.SetValue(value)
-            return StatusCode.OK
-    else:
-        return StatusCode.INTERNAL_ERROR
+        except SpinnakerException as ex:
+            raise StatusException(
+                code=StatusCode.INTERNAL_ERROR,
+                message=f"Failed to set property '{name}' to '{value}'",
+            ) from ex
 
 
-def get_op_float(node_map: INodeMap, name: str) -> Tuple[StatusCode, float]:
+def get_op_float(node_map: INodeMap, name: str) -> float:
     node = CFloatPtr(node_map.GetNode(name))
-    if is_readable(node):
-        return StatusCode.OK, node.GetValue()
-    else:
-        return StatusCode.INTERNAL_ERROR, 0.0
+    is_readable(node)
+    try:
+        return node.GetValue()
+    except SpinnakerException as ex:
+        raise StatusException(
+            code=StatusCode.INTERNAL_ERROR,
+            message=f"Failed to get property '{name}'",
+        ) from ex
 
 
-def set_op_float(node_map: INodeMap, name: str, value: float) -> StatusCode:
+def set_op_float(node_map: INodeMap, name: str, value: float):
     node = CFloatPtr(node_map.GetNode(name))
-    if is_writible(node):
-        min_value = node.GetMin()
-        max_value = node.GetMax()
-        if (value < min_value) or (value > max_value):
-            return StatusCode.FAILED_PRECONDITION
-        else:
+    is_writible(node)
+    min_value = node.GetMin()
+    max_value = node.GetMax()
+    if (value < min_value) or (value > max_value):
+        raise StatusException(
+            code=StatusCode.FAILED_PRECONDITION,
+            message=f"'Property '{name}' must be in interval [{min_value}, {max_value}]",
+        )
+    else:
+        try:
             node.SetValue(value)
-            return StatusCode.OK
-    else:
-        return StatusCode.INTERNAL_ERROR
+        except SpinnakerException as ex:
+            raise StatusException(
+                code=StatusCode.INTERNAL_ERROR,
+                message=f"Failed to set property '{name}' to '{value}'",
+            ) from ex
 
 
-def get_op_str(node_map: INodeMap, name: str) -> Tuple[StatusCode, str]:
+def get_op_str(node_map: INodeMap, name: str) -> str:
     node = CStringPtr(node_map.GetNode(name))
-    if is_readable(node):
-        return StatusCode.OK, node.GetValue()
-    else:
-        return StatusCode.INTERNAL_ERROR, ""
+    is_readable(node)
+    try:
+        return node.GetValue()
+    except SpinnakerException as ex:
+        raise StatusException(
+            code=StatusCode.INTERNAL_ERROR,
+            message=f"Failed to get property '{name}'",
+        ) from ex
 
 
-def set_op_enum(node_map: INodeMap, name: str, value: str) -> StatusCode:
+def set_op_enum(node_map: INodeMap, name: str, value: str):
     node = CEnumerationPtr(node_map.GetNode(name))
-    if is_writible(node):
+    is_writible(node)
+    try:
         node_value = node.GetEntryByName(value)
         node.SetIntValue(node_value.GetValue())
-        return StatusCode.OK
-    else:
-        return StatusCode.INTERNAL_ERROR
+    except SpinnakerException as ex:
+        raise StatusException(
+            code=StatusCode.INTERNAL_ERROR,
+            message=f"Failed to set property '{name}' to '{value}'",
+        ) from ex
 
 
-def get_op_enum(node_map: INodeMap, name: str) -> Tuple[StatusCode, str]:
+def get_op_enum(node_map: INodeMap, name: str) -> str:
     node = CEnumerationPtr(node_map.GetNode(name))
-    if is_readable(node):
-        return StatusCode.OK, node.GetCurrentEntry().GetSymbolic()
-    else:
-        return StatusCode.INTERNAL_ERROR, ""
+    is_readable(node)
+    try:
+        return node.GetCurrentEntry().GetSymbolic()
+    except SpinnakerException as ex:
+        raise StatusException(
+            code=StatusCode.INTERNAL_ERROR,
+            message=f"Failed to get property '{name}'",
+        ) from ex
 
 
-def minmax_op_float(node_map: INodeMap, name: str) -> Tuple[StatusCode, Tuple[float, float]]:
+def minmax_op_float(node_map: INodeMap, name: str) -> Tuple[float, float]:
     node = CFloatPtr(node_map.GetNode(name))
-    if is_readable(node):
-        return StatusCode.OK, (node.GetMin(), node.GetMax())
-    else:
-        return StatusCode.INTERNAL_ERROR, (0, 0)
+    is_readable(node)
+    try:
+        return (node.GetMin(), node.GetMax())
+    except SpinnakerException as ex:
+        raise StatusException(
+            code=StatusCode.INTERNAL_ERROR,
+            message=f"Failed to get property '{name}'",
+        ) from ex
+
+
+def get_value(ratio: float, min_value: float, max_value: float):
+    return (ratio * ((max_value - min_value) / 100)) + min_value
+
+
+def get_ratio(value: float, min_value: float, max_value: float):
+    return ((value - min_value) * 100) / (max_value - min_value)

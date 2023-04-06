@@ -1,5 +1,4 @@
 import sys
-import logging
 
 from google.protobuf.json_format import Parse
 
@@ -8,9 +7,8 @@ from is_spinnaker_gateway.gateway import CameraGateway
 from is_spinnaker_gateway.conf.options_pb2 import CameraGatewayOptions
 
 
-def load_json(
-        logger: Logger,
-        path: str = "/etc/is-spinnaker-gateway/options.json") -> CameraGatewayOptions:
+def load_json(logger: Logger,
+              path: str = "/etc/is-spinnaker-gateway/options.json") -> CameraGatewayOptions:
     try:
         with open(path, 'r') as f:
             try:
@@ -28,10 +26,7 @@ def main():
         options_filename = sys.argv[1]
     else:
         options_filename = '/etc/is-spinnaker-gateway/options.json'
-    logger = Logger(
-        name="CameraGateway",
-        level=logging.DEBUG,
-    )
+    logger = Logger(name="CameraGateway")
     options = load_json(
         logger=logger,
         path=options_filename,
@@ -42,8 +37,7 @@ def main():
         zipkin_uri=options.zipkin_uri,
         camera=options.camera,
     )
-    while True:
-        gateway.run()
+    gateway.run()
 
 
 if __name__ == "__main__":

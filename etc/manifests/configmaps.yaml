@@ -23,7 +23,26 @@ data:
         "packet_resend_max_requests": 10000,
         "reverse_x": false,
         "use_turbojpeg": true,
-        "initial_config": "/etc/is-spinnaker-gateway/cameras/camera_0.json"
+        "restart_period": 3600,
+        "initial_config": {
+          "sampling": {
+            "frequency": 10.0
+          },
+          "image": {
+            "color_space": {
+              "value": "RGB"
+            },
+            "format": {
+              "format": "JPEG",
+              "compression": 0.8
+            }
+          },
+          "camera": {
+            "gain": {
+              "automatic": true
+            }
+          }
+        }
       }
     }
   options_1: |-
@@ -42,7 +61,26 @@ data:
         "packet_resend_max_requests": 10000,
         "reverse_x": false,
         "use_turbojpeg": true,
-        "initial_config": "/etc/is-spinnaker-gateway/cameras/camera_1.json"
+        "restart_period": 3600,
+        "initial_config": {
+          "sampling": {
+            "frequency": 10.0
+          },
+          "image": {
+            "color_space": {
+              "value": "RGB"
+            },
+            "format": {
+              "format": "JPEG",
+              "compression": 0.8
+            }
+          },
+          "camera": {
+            "gain": {
+              "automatic": true
+            }
+          }
+        }
       }
     }
   options_2: |-
@@ -61,7 +99,26 @@ data:
         "packet_resend_max_requests": 10000,
         "reverse_x": false,
         "use_turbojpeg": true,
-        "initial_config": "/etc/is-spinnaker-gateway/cameras/camera_2.json"
+        "restart_period": 3600,
+        "initial_config": {
+          "sampling": {
+            "frequency": 10.0
+          },
+          "image": {
+            "color_space": {
+              "value": "RGB"
+            },
+            "format": {
+              "format": "JPEG",
+              "compression": 0.8
+            }
+          },
+          "camera": {
+            "gain": {
+              "automatic": true
+            }
+          }
+        }
       }
     }
   options_3: |-
@@ -80,102 +137,25 @@ data:
         "packet_resend_max_requests": 10000,
         "reverse_x": false,
         "use_turbojpeg": true,
-        "initial_config": "/etc/is-spinnaker-gateway/cameras/camera_3.json"
-      }
-    }
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: gateways-initial-configs
-  namespace: default
-  labels:
-    app: is-spinnaker-gateway
-data:
-  camera_0: |-
-    {
-      "sampling": {
-        "frequency": 10.0
-      },
-      "image": {
-        "color_space": {
-          "value": "RGB"
-        },
-        "format": {
-          "format": "JPEG",
-          "compression": 0.8
-        }
-      },
-      "camera": {
-        "gain": {
-          "automatic": true,
-          "ratio": 0
-        }
-      }
-    }
-
-  camera_1: |-
-    {
-      "sampling": {
-        "frequency": 10.0
-      },
-      "image": {
-        "color_space": {
-          "value": "RGB"
-        },
-        "format": {
-          "format": "JPEG",
-          "compression": 0.8
-        }
-      },
-      "camera": {
-        "gain": {
-          "automatic": true,
-          "ratio": 0
-        }
-      }
-    }
-
-  camera_2: |-
-    {
-      "sampling": {
-        "frequency": 10.0
-      },
-      "image": {
-        "color_space": {
-          "value": "RGB"
-        },
-        "format": {
-          "format": "JPEG",
-          "compression": 0.8
-        }
-      },
-      "camera": {
-        "gain": {
-          "automatic": true,
-          "ratio": 0
-        }
-      }
-    }
-
-  camera_3: |-
-    {
-      "sampling": {
-        "frequency": 10.0
-      },
-      "image": {
-        "color_space": {
-          "value": "RGB"
-        },
-        "format": {
-          "format": "JPEG",
-          "compression": 0.8
-        }
-      },
-      "camera": {
-        "gain": {
-          "automatic": true,
-          "ratio": 0
+        "restart_period": 3600,
+        "initial_config": {
+          "sampling": {
+            "frequency": 10.0
+          },
+          "image": {
+            "color_space": {
+              "value": "RGB"
+            },
+            "format": {
+              "format": "JPEG",
+              "compression": 0.8
+            }
+          },
+          "camera": {
+            "gain": {
+              "automatic": true
+            }
+          }
         }
       }
     }

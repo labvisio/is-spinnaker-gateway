@@ -1,52 +1,93 @@
 syntax = "proto3";
 
+import "is/msgs/camera.proto";
+
+// List of color processing algorithms that can be used to build an RGB inside
+// this service.
 enum ColorProcessingAlgorithm {
-    NOT_SPECIFIED = 0;
-    NEAREST_NEIGHBOR = 1;
-    NEAREST_NEIGHBOR_AVERAGE = 2;
-    EDGE_SENSING = 3;
-    HQ_LINEAR = 4;
-    BILINEAR = 5;
-    DIRECTIONAL_FILTER = 6;
-    WEIGHTED_DIRECTIONAL_FILTER = 7;
-    RIGOROUS = 8;
-    IPP = 9;
+  NOT_SPECIFIED = 0;
+  NEAREST_NEIGHBOR = 1;
+  NEAREST_NEIGHBOR_AVERAGE = 2;
+  EDGE_SENSING = 3;
+  HQ_LINEAR = 4;
+  BILINEAR = 5;
+  DIRECTIONAL_FILTER = 6;
+  WEIGHTED_DIRECTIONAL_FILTER = 7;
+  RIGOROUS = 8;
+  IPP = 9;
 }
 
-// Models the camera options and its characteristics.
+// Models the camera gateway and driver behavior.
 message Camera {
-    // Camera identifier.
-    uint32 id = 1;
-    // Target device (E.g.: ).
-    string ip = 2;
-    // Color processing algorithm
-    ColorProcessingAlgorithm algorithm = 3;
-    // Onboard color processing
-    bool onboard_color_processing = 4;
-    // PyTurboJPEF
-    bool use_turbojpeg = 5;
-    // Packet size
-    int32 packet_size = 6;
-    // Packet delay
-    int32 packet_delay = 7;
-    // Packet resend enable/disable
-    bool packet_resend = 8;
-    // Packet timeout in ms
-    int32 packet_resend_timeout = 9;
-    // Packet resend max requests
-    int32 packet_resend_max_requests = 10;
-    // Reverse x axis
-    bool reverse_x = 11;
-    // Initial camera parameters
-    string initial_config = 12;
+  /* Camera identifier: Images will be published with topic according to the
+   * value of this identifier. If `id = 0`, then images will be published with
+   * topic `CameraGateway.0.Frame`. It also implies that RPCs get and set config
+   * will be `CameraGateway.0.GetConfig` and `CameraGateway.0.SetConfig`.
+   */
+  uint32 id = 1;
+  /* Target device (E.g.: `10.20.6.0`): All cameras have persistent IPs in the
+   * network and are available to connections. But, it can't handle more than
+   * one connection at the same time. You will probably have errors saying that
+   * the camera is already being used in this case.
+   */
+  string ip = 2;
+  /* Color processing algorithm: By default, the cameras capture images with a
+   * BayerRG8 filter. Essentially, an 1288x788 with only one channel. To build
+   * an RGB Image is necessary to interpolate for each pixel based on its
+   * neighbors the other channel values. If the parameter
+   * `onboard_color_processing` is set to false, you can choose the color
+   * processing algorithm to build the RGB image.
+   */
+  ColorProcessingAlgorithm algorithm = 3;
+  /* Onboard color processing: The Blackfly GigE cameras have the capacity to
+   * run a interpolation algorithm and construct a RGB image onboard. But, it
+   * implies in more data in the network.
+   */
+  bool onboard_color_processing = 4;
+  /* Use PyTurboJPEG: If set to false, will use OpenCV encode method. If set to
+   * true, a python wrapper of libjpeg-turbo for decoding and encoding JPEG
+   * image will be used (3x faster image encoding).
+   */
+  bool use_turbojpeg = 5;
+  /* Packet size: UDP packet size: Always try to optimize the packet size
+   * according to your network settings. Larger packets implies in less change
+   * of packet drop and less packets. per image.
+   */
+  int32 packet_size = 6;
+  /* Packet delay: UDP packet delay: Always try to maximize to packet delay.
+   * Higher delays allows socket to process more resend requests.
+   */
+  int32 packet_delay = 7;
+  /* Packet resend: Flag to enable/disable resend UDP Packets. If not enable,
+   * may result in image inconsistencies.
+   */
+  bool packet_resend = 8;
+  /* Packet timeout: Time in milliseconds to wait after the image trailer is
+   * received and before is completed by the driver.
+   */
+  int32 packet_resend_timeout = 9;
+  /* Packet resend max requests: Maximum number of requests per image. Each
+   * resend request consists of a span of consecutive UDP packet IDs.
+   */
+  int32 packet_resend_max_requests = 10;
+  /* Reverse x: Flip horizontally the image sent by the device. The AOI is
+   * applied after the flip.
+   */
+  bool reverse_x = 11;
+  /* Restart period: restart capture stream from time to time.
+   */
+  float restart_period = 12;
+  /* Initial config: Path to json the has initial camera configurations.
+   */
+  is.vision.CameraConfig initial_config = 13;
 }
 
 // Models the service behavior.
 message CameraGatewayOptions {
-    // RabbitMQ broker uri
-    string rabbitmq_uri = 1;
-    // Zipkin uri
-    string zipkin_uri = 2;
-    // Camera configurations.
-    Camera camera = 3;
+  // RabbitMQ uri (e.g.: 'amqp://guest:guest@localhost:5672')
+  string rabbitmq_uri = 1;
+  // Zipkin uri (e.g: 'http://localhost:9411')
+  string zipkin_uri = 2;
+  // Camera gateway and driver configurations.
+  Camera camera = 3;
 }

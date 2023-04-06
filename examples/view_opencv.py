@@ -6,6 +6,8 @@ from is_spinnaker_gateway.driver.spinnaker.spinnaker import SpinnakerDriver
 
 def main():
     driver = SpinnakerDriver(
+        use_turbojpeg=False,
+        compression_level=0.8,
         color_algorithm=ColorProcessingAlgorithm.BILINEAR,
         onboard_color_processing=False,
     )
