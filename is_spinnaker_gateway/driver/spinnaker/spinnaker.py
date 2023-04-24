@@ -288,28 +288,36 @@ class SpinnakerDriver(CameraDriver):
         return roi
 
     def set_region_of_interest(self, roi: BoundingPoly):
-        if (len(roi.vertices) > 2) or (len(roi.vertices) < 2):
+        if not self._camera.IsStreaming():
+            if (len(roi.vertices) > 2) or (len(roi.vertices) < 2):
+                raise StatusException(
+                    code=StatusCode.INVALID_ARGUMENT,
+                    message="'RegionOfInterest' property must have 2 vertices.",
+                )
+            max_height = get_op_int(self._camera.GetNodeMap(), "HeightMax")
+            max_width = get_op_int(self._camera.GetNodeMap(), "WidthMax")
+            top_left = roi.vertices[0]
+            bottom_right = roi.vertices[1]
+            if (top_left.x >= bottom_right.x) or (top_left.y >= bottom_right.y):
+                raise StatusException(
+                    code=StatusCode.INVALID_ARGUMENT,
+                    message="'RegionOfInterest' property must have acceptable vertices.",
+                )
+            width = int(bottom_right.x - top_left.x)
+            height = int(bottom_right.y - top_left.y)
+            set_op_int(self._camera.GetNodeMap(), "Width", min(width, max_width))
+            set_op_int(self._camera.GetNodeMap(), "Height", min(height, max_height))
+            offset_x_range = minmax_op_int(self._camera.GetNodeMap(), "OffsetX")
+            offset_y_range = minmax_op_int(self._camera.GetNodeMap(), "OffsetY")
+            set_op_int(self._camera.GetNodeMap(), "OffsetX", min(offset_x_range[1],
+                                                                 int(top_left.x)))
+            set_op_int(self._camera.GetNodeMap(), "OffsetY", min(offset_y_range[1],
+                                                                 int(top_left.y)))
+        else:
             raise StatusException(
-                code=StatusCode.INVALID_ARGUMENT,
-                message="'RegionOfInterest' property must have 2 vertices.",
+                code=StatusCode.PERMISSION_DENIED,
+                message="'Resolution' property cannot be modify during streaming.",
             )
-        max_height = get_op_int(self._camera.GetNodeMap(), "HeightMax")
-        max_width = get_op_int(self._camera.GetNodeMap(), "WidthMax")
-        top_left = roi.vertices[0]
-        bottom_right = roi.vertices[1]
-        if (top_left.x >= bottom_right.x) or (top_left.y >= bottom_right.y):
-            raise StatusException(
-                code=StatusCode.INVALID_ARGUMENT,
-                message="'RegionOfInterest' property must have acceptable vertices.",
-            )
-        width = int(bottom_right.x - top_left.x)
-        height = int(bottom_right.y - top_left.y)
-        set_op_int(self._camera.GetNodeMap(), "Width", min(width, max_width))
-        set_op_int(self._camera.GetNodeMap(), "Height", min(height, max_height))
-        offset_x_range = minmax_op_int(self._camera.GetNodeMap(), "OffsetX")
-        offset_y_range = minmax_op_int(self._camera.GetNodeMap(), "OffsetY")
-        set_op_int(self._camera.GetNodeMap(), "OffsetX", min(offset_x_range[1], int(top_left.x)))
-        set_op_int(self._camera.GetNodeMap(), "OffsetY", min(offset_y_range[1], int(top_left.y)))
 
     # def get_resolution(self) -> Resolution:
     #     resolution = Resolution()
