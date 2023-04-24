@@ -53,10 +53,10 @@ class CameraDriver:
             message="RegionOfInterest property not implemented for this camera.",
         )
 
-    def set_region_of_interest(self, region_of_interest: BoundingPoly):
+    def set_region_of_interest(self, roi: BoundingPoly):
         raise StatusException(
             code=StatusCode.INTERNAL_ERROR,
-            nessage="RegionOfInterest property not implemented for this camera.",
+            message="RegionOfInterest property not implemented for this camera.",
         )
 
     def get_sampling_rate(self) -> FloatValue:

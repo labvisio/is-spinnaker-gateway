@@ -15,6 +15,7 @@ from is_msgs.image_pb2 import (
     ColorSpaces,
     ImageFormat,
     ImageFormats,
+    BoundingPoly,
 )
 
 from is_spinnaker_gateway.logger import Logger
@@ -29,6 +30,7 @@ from is_spinnaker_gateway.driver.spinnaker.utils import (
     get_op_float,
     set_op_float,
     set_op_bool,
+    minmax_op_int,
     minmax_op_float,
     get_value,
     get_ratio,
@@ -274,6 +276,40 @@ class SpinnakerDriver(CameraDriver):
                 code=StatusCode.FAILED_PRECONDITION,
                 message="Compression value must be greater than zero and less than one.",
             )
+
+    def get_region_of_interest(self) -> BoundingPoly:
+        roi = BoundingPoly()
+        top_left = roi.vertices.add()
+        top_left.x = get_op_int(self._camera.GetNodeMap(), "OffsetX")
+        top_left.y = get_op_int(self._camera.GetNodeMap(), "OffsetY")
+        bottom_right = roi.vertices.add()
+        bottom_right.x = top_left.x + get_op_int(self._camera.GetNodeMap(), "Width")
+        bottom_right.y = top_left.y + get_op_int(self._camera.GetNodeMap(), "Height")
+        return roi
+
+    def set_region_of_interest(self, roi: BoundingPoly):
+        if (len(roi.vertices) > 2) or (len(roi.vertices) < 2):
+            raise StatusException(
+                code=StatusCode.INVALID_ARGUMENT,
+                message="'RegionOfInterest' property must have 2 vertices.",
+            )
+        max_height = get_op_int(self._camera.GetNodeMap(), "HeightMax")
+        max_width = get_op_int(self._camera.GetNodeMap(), "WidthMax")
+        top_left = roi.vertices[0]
+        bottom_right = roi.vertices[1]
+        if (top_left.x >= bottom_right.x) or (top_left.y >= bottom_right.y):
+            raise StatusException(
+                code=StatusCode.INVALID_ARGUMENT,
+                message="'RegionOfInterest' property must have acceptable vertices.",
+            )
+        width = int(bottom_right.x - top_left.x)
+        height = int(bottom_right.y - top_left.y)
+        set_op_int(self._camera.GetNodeMap(), "Width", min(width, max_width))
+        set_op_int(self._camera.GetNodeMap(), "Height", min(height, max_height))
+        offset_x_range = minmax_op_int(self._camera.GetNodeMap(), "OffsetX")
+        offset_y_range = minmax_op_int(self._camera.GetNodeMap(), "OffsetY")
+        set_op_int(self._camera.GetNodeMap(), "OffsetX", min(offset_x_range[1], int(top_left.x)))
+        set_op_int(self._camera.GetNodeMap(), "OffsetY", min(offset_y_range[1], int(top_left.y)))
 
     # def get_resolution(self) -> Resolution:
     #     resolution = Resolution()
