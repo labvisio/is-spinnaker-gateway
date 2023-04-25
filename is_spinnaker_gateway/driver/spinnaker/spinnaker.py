@@ -316,7 +316,7 @@ class SpinnakerDriver(CameraDriver):
         else:
             raise StatusException(
                 code=StatusCode.PERMISSION_DENIED,
-                message="'Resolution' property cannot be modify during streaming.",
+                message="'RegionOfInterest' property cannot be modify during streaming.",
             )
 
     # def get_resolution(self) -> Resolution:
