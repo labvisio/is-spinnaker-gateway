@@ -25,6 +25,18 @@
 				"format": {
 					"format": "JPEG",
 					"compression": 0.8
+				},
+				"region": {
+					"vertices": [
+						{
+							"x": 0,
+							"y": 0
+						},
+						{
+							"x": 1288,
+							"y": 728
+						}
+					]
 				}
 			},
 			"camera": {
