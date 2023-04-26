@@ -193,8 +193,8 @@ def minmax_op_int(node_map: INodeMap, name: str) -> Tuple[int, int]:
 
 
 def get_value(ratio: float, min_value: float, max_value: float):
-    return (ratio * ((max_value - min_value) / 100)) + min_value
+    return (ratio * ((max_value - min_value))) + min_value
 
 
 def get_ratio(value: float, min_value: float, max_value: float):
-    return ((value - min_value) * 100) / (max_value - min_value)
+    return (value - min_value) / (max_value - min_value)
