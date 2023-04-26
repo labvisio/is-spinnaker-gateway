@@ -1,5 +1,5 @@
 {
-	"rabbitmq_uri": "amqp://guest:guest@10.20.5.2:30000",
+	"rabbitmq_uri": "amqp://guest:guest@localhost:5672",
 	"zipkin_uri": "http://localhost:9411",
 	"camera": {
 		"id": 0,
