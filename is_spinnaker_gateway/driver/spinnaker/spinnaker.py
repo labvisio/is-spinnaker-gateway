@@ -347,7 +347,7 @@ class SpinnakerDriver(CameraDriver):
             value_range = minmax_op_float(self._camera.GetNodeMap(), "Gain")
             setting.ratio = get_ratio(value, value_range[0], value_range[1])
         return setting
-    
+
     def get_brightness(self):
         setting = CameraSetting()
         value = get_op_float(self._camera.GetNodeMap(), "BlackLevel")
