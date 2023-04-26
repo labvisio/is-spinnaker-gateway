@@ -1,5 +1,5 @@
 {
-	"rabbitmq_uri": "amqp://guest:guest@localhost:5672",
+	"rabbitmq_uri": "amqp://guest:guest@10.20.5.2:30000",
 	"zipkin_uri": "http://localhost:9411",
 	"camera": {
 		"id": 0,
@@ -42,6 +42,12 @@
 			"camera": {
 				"gain": {
 					"automatic": true
+				},
+				"white_balance_rv": {
+					"automatic": true
+				},
+				"white_balance_bu": {
+				  "automatic": true
 				}
 			}
 		}
