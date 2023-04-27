@@ -393,6 +393,19 @@ class SpinnakerDriver(CameraDriver):
             setting.ratio = get_ratio(value, value_range[0], value_range[1])
         return setting
 
+    def get_brightness(self):
+        setting = CameraSetting()
+        value = get_op_float(self._camera.GetNodeMap(), "BlackLevel")
+        value_range = minmax_op_float(self._camera.GetNodeMap(), "BlackLevel")
+        setting.ratio = get_ratio(value, value_range[0], value_range[1])
+        setting.automatic = False
+        return setting
+
+    def set_brightness(self, brightness: CameraSetting) -> CameraSetting:
+        value_range = minmax_op_float(self._camera.GetNodeMap(), "BlackLevel")
+        value = get_value(brightness.ratio, value_range[0], value_range[1])
+        set_op_float(self._camera.GetNodeMap(), "BlackLevel", value)
+
     def set_reverse_x(self, reverse_x: bool) -> Status:
         set_op_bool(self._camera.GetNodeMap(), "ReverseX", reverse_x)
 

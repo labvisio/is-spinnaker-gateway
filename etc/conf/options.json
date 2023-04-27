@@ -43,12 +43,14 @@
 				"gain": {
 					"automatic": true
 				},
+        "brightness": {
+					"ratio": 0.0
+				},
 				"white_balance_rv": {
 					"automatic": true
 				},
 				"white_balance_bu": {
 				  "automatic": true
-				}
 			}
 		}
 	}
