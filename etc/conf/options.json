@@ -42,6 +42,9 @@
 			"camera": {
 				"gain": {
 					"automatic": true
+				},
+				"brightness": {
+					"ratio": 0.0
 				}
 			}
 		}
