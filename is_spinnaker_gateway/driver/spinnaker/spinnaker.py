@@ -327,6 +327,51 @@ class SpinnakerDriver(CameraDriver):
     #     resolution.height = height
     #     return resolution
 
+    def get_white_balance(self, choice: str):
+        if self._color_space != ColorSpaces.Value("RGB"):
+            raise StatusException(
+                code=StatusCode.INTERNAL_ERROR,
+                message="White Balance availabe just on RGB color space",
+            )
+        setting = CameraSetting()
+        auto = get_op_enum(self._camera.GetNodeMap(), "BalanceWhiteAuto")
+        if auto == "Continuous":
+            setting.automatic = True
+        else:
+            setting.automatic = False
+            set_op_enum(self._camera.GetNodeMap(), "BalanceRatioSelector", choice)
+            value = get_op_float(self._camera.GetNodeMap(), "BalanceRatio")
+            value_range = minmax_op_float(self._camera.GetNodeMap(), "BalanceRatio")
+            setting.ratio = get_ratio(value, value_range[0], value_range[1])
+        return setting
+
+    def set_white_balance(self, white_balance: CameraSetting, choice: str):
+        if self._color_space != ColorSpaces.Value("RGB"):
+            raise StatusException(
+                code=StatusCode.INTERNAL_ERROR,
+                message="White Balance availabe just on RGB color space",
+            )
+        if white_balance.automatic:
+            set_op_enum(self._camera.GetNodeMap(), "BalanceWhiteAuto", "Continuous")
+        else:
+            set_op_enum(self._camera.GetNodeMap(), "BalanceWhiteAuto", "Off")
+            set_op_enum(self._camera.GetNodeMap(), "BalanceRatioSelector", choice)
+            value_range = minmax_op_float(self._camera.GetNodeMap(), "BalanceRatio")
+            value = get_value(white_balance.ratio, value_range[0], value_range[1])
+            set_op_float(self._camera.GetNodeMap(), "BalanceRatio", value)
+
+    def get_white_balance_bu(self) -> CameraSetting:
+        return self.get_white_balance(choice="Blue")
+
+    def set_white_balance_bu(self, white_balance_bu: CameraSetting):
+        self.set_white_balance(white_balance=white_balance_bu, choice="Blue")
+
+    def get_white_balance_rv(self) -> CameraSetting:
+        return self.get_white_balance(choice="Red")
+
+    def set_white_balance_rv(self, white_balance_rv: CameraSetting):
+        self.set_white_balance(white_balance=white_balance_rv, choice="Red")
+
     def set_gain(self, gain: CameraSetting):
         if gain.automatic:
             set_op_enum(self._camera.GetNodeMap(), "GainAuto", "Continuous")
