@@ -54,3 +54,6 @@ venv.bak/
 *.whl
 *.deb
 *.tar.gz
+
+# VSCode
+.vscode
