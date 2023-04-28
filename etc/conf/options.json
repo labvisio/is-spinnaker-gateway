@@ -43,6 +43,9 @@
         "gain": {
           "automatic": true
         },
+        "shutter": {
+          "automatic": true
+        },
         "brightness": {
           "ratio": 0.0
         },
