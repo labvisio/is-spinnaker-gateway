@@ -372,6 +372,15 @@ class SpinnakerDriver(CameraDriver):
     def set_white_balance_rv(self, white_balance_rv: CameraSetting):
         self.set_white_balance(white_balance=white_balance_rv, choice="Red")
 
+    def get_gain(self) -> CameraSetting:
+        setting = CameraSetting()
+        auto = get_op_enum(self._camera.GetNodeMap(), "GainAuto")
+        setting.automatic = auto == "Continuous"
+        value = get_op_float(self._camera.GetNodeMap(), "Gain")
+        value_range = minmax_op_float(self._camera.GetNodeMap(), "Gain")
+        setting.ratio = get_ratio(value, value_range[0], value_range[1])
+        return setting
+
     def set_gain(self, gain: CameraSetting):
         if gain.automatic:
             set_op_enum(self._camera.GetNodeMap(), "GainAuto", "Continuous")
@@ -380,18 +389,6 @@ class SpinnakerDriver(CameraDriver):
             value_range = minmax_op_float(self._camera.GetNodeMap(), "Gain")
             value = get_value(gain.ratio, value_range[0], value_range[1])
             set_op_float(self._camera.GetNodeMap(), "Gain", value)
-
-    def get_gain(self) -> CameraSetting:
-        setting = CameraSetting()
-        auto = get_op_enum(self._camera.GetNodeMap(), "GainAuto")
-        if auto == "Continuous":
-            setting.automatic = True
-        else:
-            setting.automatic = False
-            value = get_op_float(self._camera.GetNodeMap(), "Gain")
-            value_range = minmax_op_float(self._camera.GetNodeMap(), "Gain")
-            setting.ratio = get_ratio(value, value_range[0], value_range[1])
-        return setting
 
     def get_brightness(self):
         setting = CameraSetting()
