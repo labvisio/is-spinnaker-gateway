@@ -406,6 +406,24 @@ class SpinnakerDriver(CameraDriver):
         value = get_value(brightness.ratio, value_range[0], value_range[1])
         set_op_float(self._camera.GetNodeMap(), "BlackLevel", value)
 
+    def get_shutter(self) -> CameraSetting:
+        setting = CameraSetting()
+        auto = get_op_enum(self._camera.GetNodeMap(), "ExposureAuto")
+        setting.automatic = auto == "Continuous"
+        value_range = minmax_op_float(self._camera.GetNodeMap(), "ExposureTime")
+        value = get_op_float(self._camera.GetNodeMap(), "ExposureTime")
+        setting.ratio = get_ratio(value, value_range[0], value_range[1])
+        return setting
+
+    def set_shutter(self, shutter: CameraSetting):
+        if shutter.automatic:
+            set_op_enum(self._camera.GetNodeMap(), "ExposureAuto", "Continuous")
+        else:
+            set_op_enum(self._camera.GetNodeMap(), "ExposureAuto", "Off")
+            value_range = minmax_op_float(self._camera.GetNodeMap(), "ExposureTime")
+            value = get_value(shutter.ratio, value_range[0], value_range[1])
+            set_op_float(self._camera.GetNodeMap(), "ExposureTime", value)
+
     def set_reverse_x(self, reverse_x: bool) -> Status:
         set_op_bool(self._camera.GetNodeMap(), "ReverseX", reverse_x)
 
