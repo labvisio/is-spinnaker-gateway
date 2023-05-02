@@ -424,21 +424,21 @@ class SpinnakerDriver(CameraDriver):
             value = get_value(shutter.ratio, value_range[0], value_range[1])
             set_op_float(self._camera.GetNodeMap(), "ExposureTime", value)
 
-    def set_reverse_x(self, reverse_x: bool) -> Status:
+    def set_reverse_x(self, reverse_x: bool):
         set_op_bool(self._camera.GetNodeMap(), "ReverseX", reverse_x)
 
-    def set_packet_size(self, packet_size: int) -> Status:
+    def set_packet_size(self, packet_size: int):
         set_op_int(self._camera.GetNodeMap(), "GevSCPSPacketSize", packet_size)
 
-    def set_packet_delay(self, packet_delay: int) -> Status:
+    def set_packet_delay(self, packet_delay: int):
         set_op_int(self._camera.GetNodeMap(), "GevSCPD", packet_delay)
 
-    def set_packet_resend(self, packet_resend: bool) -> Status:
+    def set_packet_resend(self, packet_resend: bool):
         set_op_bool(self._camera.GetTLStreamNodeMap(), "StreamPacketResendEnable", packet_resend)
 
-    def set_packet_resend_timeout(self, timeout: int) -> Status:
+    def set_packet_resend_timeout(self, timeout: int):
         set_op_int(self._camera.GetTLStreamNodeMap(), "StreamPacketResendTimeout", timeout)
 
-    def set_packet_resend_max_requests(self, max_requests: int) -> Status:
+    def set_packet_resend_max_requests(self, max_requests: int):
         set_op_int(self._camera.GetTLStreamNodeMap(), "StreamPacketResendMaxRequests",
                    max_requests)
