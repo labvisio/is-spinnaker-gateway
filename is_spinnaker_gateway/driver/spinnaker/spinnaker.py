@@ -409,22 +409,20 @@ class SpinnakerDriver(CameraDriver):
     def get_shutter(self) -> CameraSetting:
         setting = CameraSetting()
         auto = get_op_enum(self._camera.GetNodeMap(), "ExposureAuto")
-        if auto == "Continuous":
-            setting.automatic = True
-        else:
-            fps = get_op_float(self._camera.GetNodeMap(), "AcquisitionFrameRate")
-            period_us = 1e6 / fps
-            value = get_op_float(self._camera.GetNodeMap(), "ExposureTime")
-            setting.ratio = min(1, (value / period_us))
+        setting.automatic = auto == "Continuous"
+        value_range = minmax_op_float(self._camera.GetNodeMap(), "ExposureTime")
+        value = get_op_float(self._camera.GetNodeMap(), "ExposureTime")
+        setting.ratio = get_ratio(value, value_range[0], value_range[1])
+        return setting
 
     def set_shutter(self, shutter: CameraSetting):
         if shutter.automatic:
             set_op_enum(self._camera.GetNodeMap(), "ExposureAuto", "Continuous")
         else:
             set_op_enum(self._camera.GetNodeMap(), "ExposureAuto", "Off")
-            fps = get_op_float(self._camera.GetNodeMap(), "AcquisitionFrameRate")
-            period_us = 1e6 / fps
-            set_op_float(self._camera.GetNodeMap(), "ExposureTime", period_us * shutter.ratio)
+            value_range = minmax_op_float(self._camera.GetNodeMap(), "ExposureTime")
+            value = get_value(shutter.ratio, value_range[0], value_range[1])
+            set_op_float(self._camera.GetNodeMap(), "ExposureTime", value)
 
     def set_reverse_x(self, reverse_x: bool) -> Status:
         set_op_bool(self._camera.GetNodeMap(), "ReverseX", reverse_x)
