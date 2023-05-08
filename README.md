@@ -45,7 +45,7 @@ The Teledyne FLIR company provides a good guide to [Troubleshooting Image Consis
 
 * `onboard_color_processing`: by default, the cameras capture images with a BayerRG8 filter. Essentially, an 1288x788 with only one channel. To build a RGB Image is necessary to interpolate for each pixel based on its neighbors the other channel values. The Blackfly GigE cameras have the capacity to run a interpolation algorithm and construct a RGB image onboard. But, it implies in more data over the network. If you would like to run all gateways in only one server, you may have to set this to `False`. However, by setting `onboard_color_processing=False` it implies in some processing time to construct an RGB inside the gateway.
 
-* `algorithm`: .  if the parameter `onboard_color_processing=False`, you can choose the color processing algorithm to build the RGB image. The Teledyne FLIR company also provides a guide to [Undestading Color Interpolation], where you can choose the best algorithm to your needs.
+* `algorithm`: if `onboard_color_processing=False`, you can choose the color processing algorithm to build the RGB image. The Teledyne FLIR company also provides a guide to [Undestading Color Interpolation], where you can choose the best algorithm to fit your needs.
 
 * `packet_size`: UDP packet size. Always try to optimize the packet size according to your network settings. Larger packets implies in less chance of packet drop and less packets per image, but your local network should not fragment these packets to improve streamming.
 
