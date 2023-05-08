@@ -14,7 +14,6 @@ This repository contains a implementation of a camera gateway for [BlackFly GigE
 
 The behavior of the service can be customized by passing a JSON configuration file as the first argument, e.g: `is-spinnaker-gateway options.json`. The schema for this file can be found in [`is_spinnaker_gateway/conf/options.proto`](is_spinnaker_gateway/conf/options.proto). An example configuration file can be found in [`etc/conf/options.json`](etc/conf/options.json).
 
-
 ## Development
 
 It is recommended that you use Ubuntu 22.04 for development. Also, make sure you have Docker installed (if not, [Install Docker Engine on Ubuntu] and [Linux post-installation steps for Docker Engine]). 
@@ -39,6 +38,26 @@ You can also build the image with your user and the version you want:
 ```bash
 make image USER=luizcarloscf VERSION=0.1.3-beta
 ```
+
+## Troubleshooting
+
+The Teledyne FLIR company provides a good guide to [Troubleshooting Image Consistency Errors]. Image consistency errors have a variety of causes, and the user may have to address more than one cause to correct the errors. Note that this gateway provides some really important configurations to optimize the streamming:
+
+* `onboard_color_processing`: by default, the cameras capture images with a BayerRG8 filter. Essentially, an 1288x788 with only one channel. To build a RGB Image is necessary to interpolate for each pixel based on its neighbors the other channel values. The Blackfly GigE cameras have the capacity to run a interpolation algorithm and construct a RGB image onboard. But, it implies in more data over the network. If you would like to run all gateways in only one server, you may have to set this to `False`. However, by setting `onboard_color_processing=False` it implies in some processing time to construct an RGB inside the gateway.
+
+* `algorithm`: .  if the parameter `onboard_color_processing=False`, you can choose the color processing algorithm to build the RGB image. The Teledyne FLIR company also provides a guide to [Undestading Color Interpolation], where you can choose the best algorithm to your needs.
+
+* `packet_size`: UDP packet size. Always try to optimize the packet size according to your network settings. Larger packets implies in less chance of packet drop and less packets per image, but your local network should not fragment these packets to improve streamming.
+
+* `packet_delay`: UDP packet delay. Always try to maximize to packet delay. Higher delays allows socket to process more resend requests. However, when increasing the packet delay, the maximum framerate will be lower. In the guide [Troubleshooting Image Consistency Errors], there is a section about **Understanding Packet Delay, Device Link Throughput, and camera framerate** that explain how packet delay changes the maximum framerate.
+
+* `packet_resend`: flag to enable/disable resend UDP Packets. If not enable, may result in image inconsistencies.
+
+* `packet_resend_timeout`: time in milliseconds to wait after the image trailer is received and before is completed by the driver.
+
+* `packet_resend_max_requests`: maximum number of requests per image. Each resend request consists of a span of consecutive UDP packet IDs.
+
+* `restart_period`: restart capture stream from time to time. The package `PySpin` has some bugs, after some time the streamming stops due to memory related issues in Boost C++ library used by Spinnaker SDK. 
 
 ## Usefull resources and links
 
