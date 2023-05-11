@@ -12,7 +12,30 @@ This repository contains a implementation of a camera gateway for [BlackFly GigE
 
 ## Configuration
 
-The behavior of the service can be customized by passing a JSON configuration file as the first argument, e.g: `is-spinnaker-gateway options.json`. The schema for this file can be found in [`is_spinnaker_gateway/conf/options.proto`](is_spinnaker_gateway/conf/options.proto). An example configuration file can be found in [`etc/conf/options.json`](etc/conf/options.json).
+The behavior of the service can be customized by passing a JSON configuration file as the first argument, e.g: `is-spinnaker-gateway options.json`. The schema for this file can be found in [`is_spinnaker_gateway/conf/options.proto`](is_spinnaker_gateway/conf/options.proto). An example configuration file can be found in [`etc/conf/options.json`](etc/conf/options.json). Check the following table to see the available settings and which ones are modifiable during streaming:
+
+| Configuration      | Available          | Modifiable during streaming | 
+|--------------------|--------------------|-----------------------------|
+| Sampling Rate      | :heavy_check_mark: | :heavy_check_mark:          |
+| Delay              | :x:                | :x:                         |
+| Image Resolution   | :x:                | :x:                         |
+| Image Format       | :heavy_check_mark: | :heavy_check_mark:          |
+| Image Color Space  | :heavy_check_mark: | :x:                         |
+| Region of Interest | :heavy_check_mark: | :x:                         |
+| Brightness         | :heavy_check_mark: | :heavy_check_mark:          |
+| Exposure           | :x:                | :x:                         |
+| Focus              | :x:                | :x:                         |
+| Gain               | :heavy_check_mark: | :heavy_check_mark:          |
+| Gamma              | :x:                | :x:                         |
+| Hue                | :x:                | :x:                         |
+| Iris               | :x:                | :x:                         |
+| Saturation         | :x:                | :x:                         |
+| Sharpness          | :x:                | :x:                         |
+| Shutter            | :heavy_check_mark: | :heavy_check_mark:          |
+| White Balance RV   | :heavy_check_mark: | :heavy_check_mark:          |
+| White Balance BU   | :heavy_check_mark: | :heavy_check_mark:          |
+| Zoom               | :x:                | :x:                         |
+| Contrast           | :x:                | :x:                         |
 
 ## Development
 
