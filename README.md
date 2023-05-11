@@ -37,6 +37,13 @@ The behavior of the service can be customized by passing a JSON configuration fi
 | Zoom               | :x:                | :x:                         |
 | Contrast           | :x:                | :x:                         |
 
+---
+**NOTE**
+
+When setting the `white_balance_rv` to automatic, `white_balance_bu` will also be set to automatic.  It is not possible to set one to automatic and the other not. So, be careful when configuring it.
+
+---
+
 ## Development
 
 It is recommended that you use Ubuntu 22.04 for development. Also, make sure you have Docker installed (if not, [Install Docker Engine on Ubuntu] and [Linux post-installation steps for Docker Engine]). 
