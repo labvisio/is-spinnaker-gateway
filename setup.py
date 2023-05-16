@@ -7,7 +7,7 @@ package_name = 'is_spinnaker_gateway'
 
 setup(
     name=package_name,
-    version='0.1.2',
+    version='0.2.0',
     description='Gateway for BlackFly GigE camera models using Spinnaker SDK.',
     long_description=open("README.md").read().strip(),
     long_description_content_type="text/markdown",
