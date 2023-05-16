@@ -20,7 +20,7 @@ spec:
       dnsPolicy: "ClusterFirstWithHostNet"
       containers:
         - name: is-spinnaker-gateway-0
-          image: labvisio/is-spinnaker-gateway:0.1.2
+          image: labvisio/is-spinnaker-gateway:0.2.0
           command:
             - "is-spinnaker-gateway"
             - "/etc/is-spinnaker-gateway/options_0.json"
@@ -67,7 +67,7 @@ spec:
       hostNetwork: True
       containers:
         - name: is-spinnaker-gateway-1
-          image: labvisio/is-spinnaker-gateway:0.1.2
+          image: labvisio/is-spinnaker-gateway:0.2.0
           command:
             - "is-spinnaker-gateway"
             - "/etc/is-spinnaker-gateway/options_1.json"
@@ -114,7 +114,7 @@ spec:
       hostNetwork: True
       containers:
         - name: is-spinnaker-gateway-2
-          image: labvisio/is-spinnaker-gateway:0.1.2
+          image: labvisio/is-spinnaker-gateway:0.2.0
           command:
             - "is-spinnaker-gateway"
             - "/etc/is-spinnaker-gateway/options_2.json"
@@ -161,7 +161,7 @@ spec:
       hostNetwork: True
       containers:
         - name: is-spinnaker-gateway-3
-          image: labvisio/is-spinnaker-gateway:0.1.2
+          image: labvisio/is-spinnaker-gateway:0.2.0
           command:
             - "is-spinnaker-gateway"
             - "/etc/is-spinnaker-gateway/options_3.json"

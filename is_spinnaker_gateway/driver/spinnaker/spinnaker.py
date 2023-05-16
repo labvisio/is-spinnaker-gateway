@@ -15,6 +15,7 @@ from is_msgs.image_pb2 import (
     ColorSpaces,
     ImageFormat,
     ImageFormats,
+    BoundingPoly,
 )
 
 from is_spinnaker_gateway.logger import Logger
@@ -29,6 +30,7 @@ from is_spinnaker_gateway.driver.spinnaker.utils import (
     get_op_float,
     set_op_float,
     set_op_bool,
+    minmax_op_int,
     minmax_op_float,
     get_value,
     get_ratio,
@@ -275,6 +277,48 @@ class SpinnakerDriver(CameraDriver):
                 message="Compression value must be greater than zero and less than one.",
             )
 
+    def get_region_of_interest(self) -> BoundingPoly:
+        roi = BoundingPoly()
+        top_left = roi.vertices.add()
+        top_left.x = get_op_int(self._camera.GetNodeMap(), "OffsetX")
+        top_left.y = get_op_int(self._camera.GetNodeMap(), "OffsetY")
+        bottom_right = roi.vertices.add()
+        bottom_right.x = top_left.x + get_op_int(self._camera.GetNodeMap(), "Width")
+        bottom_right.y = top_left.y + get_op_int(self._camera.GetNodeMap(), "Height")
+        return roi
+
+    def set_region_of_interest(self, roi: BoundingPoly):
+        if not self._camera.IsStreaming():
+            if (len(roi.vertices) > 2) or (len(roi.vertices) < 2):
+                raise StatusException(
+                    code=StatusCode.INVALID_ARGUMENT,
+                    message="'RegionOfInterest' property must have 2 vertices.",
+                )
+            max_height = get_op_int(self._camera.GetNodeMap(), "HeightMax")
+            max_width = get_op_int(self._camera.GetNodeMap(), "WidthMax")
+            top_left = roi.vertices[0]
+            bottom_right = roi.vertices[1]
+            if (top_left.x >= bottom_right.x) or (top_left.y >= bottom_right.y):
+                raise StatusException(
+                    code=StatusCode.INVALID_ARGUMENT,
+                    message="'RegionOfInterest' property must have acceptable vertices.",
+                )
+            width = int(bottom_right.x - top_left.x)
+            height = int(bottom_right.y - top_left.y)
+            set_op_int(self._camera.GetNodeMap(), "Width", min(width, max_width))
+            set_op_int(self._camera.GetNodeMap(), "Height", min(height, max_height))
+            offset_x_range = minmax_op_int(self._camera.GetNodeMap(), "OffsetX")
+            offset_y_range = minmax_op_int(self._camera.GetNodeMap(), "OffsetY")
+            set_op_int(self._camera.GetNodeMap(), "OffsetX", min(offset_x_range[1],
+                                                                 int(top_left.x)))
+            set_op_int(self._camera.GetNodeMap(), "OffsetY", min(offset_y_range[1],
+                                                                 int(top_left.y)))
+        else:
+            raise StatusException(
+                code=StatusCode.PERMISSION_DENIED,
+                message="'RegionOfInterest' property cannot be modify during streaming.",
+            )
+
     # def get_resolution(self) -> Resolution:
     #     resolution = Resolution()
     #     width = get_op_int(self._camera.GetNodeMap(), "Width")
@@ -282,6 +326,60 @@ class SpinnakerDriver(CameraDriver):
     #     resolution.width = width
     #     resolution.height = height
     #     return resolution
+
+    def get_white_balance(self, choice: str):
+        if self._color_space != ColorSpaces.Value("RGB"):
+            raise StatusException(
+                code=StatusCode.INTERNAL_ERROR,
+                message="White Balance availabe just on RGB color space",
+            )
+        setting = CameraSetting()
+        auto = get_op_enum(self._camera.GetNodeMap(), "BalanceWhiteAuto")
+        if auto == "Continuous":
+            setting.automatic = True
+        else:
+            setting.automatic = False
+            set_op_enum(self._camera.GetNodeMap(), "BalanceRatioSelector", choice)
+            value = get_op_float(self._camera.GetNodeMap(), "BalanceRatio")
+            value_range = minmax_op_float(self._camera.GetNodeMap(), "BalanceRatio")
+            setting.ratio = get_ratio(value, value_range[0], value_range[1])
+        return setting
+
+    def set_white_balance(self, white_balance: CameraSetting, choice: str):
+        if self._color_space != ColorSpaces.Value("RGB"):
+            raise StatusException(
+                code=StatusCode.INTERNAL_ERROR,
+                message="White Balance availabe just on RGB color space",
+            )
+        if white_balance.automatic:
+            set_op_enum(self._camera.GetNodeMap(), "BalanceWhiteAuto", "Continuous")
+        else:
+            set_op_enum(self._camera.GetNodeMap(), "BalanceWhiteAuto", "Off")
+            set_op_enum(self._camera.GetNodeMap(), "BalanceRatioSelector", choice)
+            value_range = minmax_op_float(self._camera.GetNodeMap(), "BalanceRatio")
+            value = get_value(white_balance.ratio, value_range[0], value_range[1])
+            set_op_float(self._camera.GetNodeMap(), "BalanceRatio", value)
+
+    def get_white_balance_bu(self) -> CameraSetting:
+        return self.get_white_balance(choice="Blue")
+
+    def set_white_balance_bu(self, white_balance_bu: CameraSetting):
+        self.set_white_balance(white_balance=white_balance_bu, choice="Blue")
+
+    def get_white_balance_rv(self) -> CameraSetting:
+        return self.get_white_balance(choice="Red")
+
+    def set_white_balance_rv(self, white_balance_rv: CameraSetting):
+        self.set_white_balance(white_balance=white_balance_rv, choice="Red")
+
+    def get_gain(self) -> CameraSetting:
+        setting = CameraSetting()
+        auto = get_op_enum(self._camera.GetNodeMap(), "GainAuto")
+        setting.automatic = auto == "Continuous"
+        value = get_op_float(self._camera.GetNodeMap(), "Gain")
+        value_range = minmax_op_float(self._camera.GetNodeMap(), "Gain")
+        setting.ratio = get_ratio(value, value_range[0], value_range[1])
+        return setting
 
     def set_gain(self, gain: CameraSetting):
         if gain.automatic:
@@ -292,33 +390,52 @@ class SpinnakerDriver(CameraDriver):
             value = get_value(gain.ratio, value_range[0], value_range[1])
             set_op_float(self._camera.GetNodeMap(), "Gain", value)
 
-    def get_gain(self) -> CameraSetting:
+    def get_brightness(self):
         setting = CameraSetting()
-        auto = get_op_enum(self._camera.GetNodeMap(), "GainAuto")
-        if auto == "Continuous":
-            setting.automatic = True
-        else:
-            setting.automatic = False
-            value = get_op_float(self._camera.GetNodeMap(), "Gain")
-            value_range = minmax_op_float(self._camera.GetNodeMap(), "Gain")
-            setting.ratio = get_ratio(value, value_range[0], value_range[1])
+        value = get_op_float(self._camera.GetNodeMap(), "BlackLevel")
+        value_range = minmax_op_float(self._camera.GetNodeMap(), "BlackLevel")
+        setting.ratio = get_ratio(value, value_range[0], value_range[1])
+        setting.automatic = False
         return setting
 
-    def set_reverse_x(self, reverse_x: bool) -> Status:
+    def set_brightness(self, brightness: CameraSetting) -> CameraSetting:
+        value_range = minmax_op_float(self._camera.GetNodeMap(), "BlackLevel")
+        value = get_value(brightness.ratio, value_range[0], value_range[1])
+        set_op_float(self._camera.GetNodeMap(), "BlackLevel", value)
+
+    def get_shutter(self) -> CameraSetting:
+        setting = CameraSetting()
+        auto = get_op_enum(self._camera.GetNodeMap(), "ExposureAuto")
+        setting.automatic = auto == "Continuous"
+        value_range = minmax_op_float(self._camera.GetNodeMap(), "ExposureTime")
+        value = get_op_float(self._camera.GetNodeMap(), "ExposureTime")
+        setting.ratio = get_ratio(value, value_range[0], value_range[1])
+        return setting
+
+    def set_shutter(self, shutter: CameraSetting):
+        if shutter.automatic:
+            set_op_enum(self._camera.GetNodeMap(), "ExposureAuto", "Continuous")
+        else:
+            set_op_enum(self._camera.GetNodeMap(), "ExposureAuto", "Off")
+            value_range = minmax_op_float(self._camera.GetNodeMap(), "ExposureTime")
+            value = get_value(shutter.ratio, value_range[0], value_range[1])
+            set_op_float(self._camera.GetNodeMap(), "ExposureTime", value)
+
+    def set_reverse_x(self, reverse_x: bool):
         set_op_bool(self._camera.GetNodeMap(), "ReverseX", reverse_x)
 
-    def set_packet_size(self, packet_size: int) -> Status:
+    def set_packet_size(self, packet_size: int):
         set_op_int(self._camera.GetNodeMap(), "GevSCPSPacketSize", packet_size)
 
-    def set_packet_delay(self, packet_delay: int) -> Status:
+    def set_packet_delay(self, packet_delay: int):
         set_op_int(self._camera.GetNodeMap(), "GevSCPD", packet_delay)
 
-    def set_packet_resend(self, packet_resend: bool) -> Status:
+    def set_packet_resend(self, packet_resend: bool):
         set_op_bool(self._camera.GetTLStreamNodeMap(), "StreamPacketResendEnable", packet_resend)
 
-    def set_packet_resend_timeout(self, timeout: int) -> Status:
+    def set_packet_resend_timeout(self, timeout: int):
         set_op_int(self._camera.GetTLStreamNodeMap(), "StreamPacketResendTimeout", timeout)
 
-    def set_packet_resend_max_requests(self, max_requests: int) -> Status:
+    def set_packet_resend_max_requests(self, max_requests: int):
         set_op_int(self._camera.GetTLStreamNodeMap(), "StreamPacketResendMaxRequests",
                    max_requests)

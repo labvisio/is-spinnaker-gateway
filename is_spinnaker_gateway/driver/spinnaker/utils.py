@@ -180,9 +180,21 @@ def minmax_op_float(node_map: INodeMap, name: str) -> Tuple[float, float]:
         ) from ex
 
 
+def minmax_op_int(node_map: INodeMap, name: str) -> Tuple[int, int]:
+    node = CIntegerPtr(node_map.GetNode(name))
+    is_readable(node)
+    try:
+        return (node.GetMin(), node.GetMax())
+    except SpinnakerException as ex:
+        raise StatusException(
+            code=StatusCode.INTERNAL_ERROR,
+            message=f"Failed to get property '{name}'",
+        ) from ex
+
+
 def get_value(ratio: float, min_value: float, max_value: float):
-    return (ratio * ((max_value - min_value) / 100)) + min_value
+    return (ratio * ((max_value - min_value))) + min_value
 
 
 def get_ratio(value: float, min_value: float, max_value: float):
-    return ((value - min_value) * 100) / (max_value - min_value)
+    return (value - min_value) / (max_value - min_value)
