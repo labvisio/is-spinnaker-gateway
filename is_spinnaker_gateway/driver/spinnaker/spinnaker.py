@@ -97,7 +97,7 @@ class SpinnakerDriver(CameraDriver):
         self.running = False
         self.initied = False
 
-    def connect(self, ip: str = "10.20.6.0"):
+    def connect(self, ip: str = "10.20.6.0") -> None:
         cam_list = self._system.GetCameras()
         n_cameras = cam_list.GetSize()
         self._logger.info("Found {} cameras.".format(n_cameras))
@@ -109,8 +109,8 @@ class SpinnakerDriver(CameraDriver):
                 self._camera = cam_list.GetByIndex(i)
             except PySpin.SpinnakerException as ex:
                 self._logger.critical("Spinnaker Exception \n{}", ex)
-            ip_address = get_op_int(self._camera.GetTLDeviceNodeMap(), "GevDeviceIPAddress")
-            ip_address = self.get_ip(ip_address)
+            ip_address_256 = get_op_int(self._camera.GetTLDeviceNodeMap(), "GevDeviceIPAddress")
+            ip_address = self.get_ip(ip_address_256)
             if ip == ip_address:
                 try:
                     self._camera.Init()
@@ -135,7 +135,7 @@ class SpinnakerDriver(CameraDriver):
         ip_list = self.int2base(x=ip, base=256)
         return ".".join([str(i) for i in ip_list])
 
-    def close(self):
+    def close(self) -> None:
         try:
             if self._camera.IsStreaming():
                 self._camera.EndAcquisition()
@@ -149,7 +149,7 @@ class SpinnakerDriver(CameraDriver):
     @staticmethod
     def int2base(x: int, base: int) -> List[int]:
         if x == 0:
-            return 0
+            return [0]
         digits = []
         while x:
             digits.append(x % base)
@@ -157,11 +157,11 @@ class SpinnakerDriver(CameraDriver):
         digits.reverse()
         return digits
 
-    def start_capture(self):
+    def start_capture(self) -> None:
         if not self._camera.IsStreaming():
             self._camera.BeginAcquisition()
 
-    def stop_capture(self):
+    def stop_capture(self) -> None:
         if self._camera.IsStreaming():
             self._camera.EndAcquisition()
 
@@ -219,7 +219,7 @@ class SpinnakerDriver(CameraDriver):
         rate.value = value
         return rate
 
-    def set_sampling_rate(self, sampling_rate: FloatValue):
+    def set_sampling_rate(self, sampling_rate: FloatValue) -> None:
         set_op_enum(self._camera.GetNodeMap(), "AcquisitionFrameRateAuto", "Off")
         set_op_bool(self._camera.GetNodeMap(), "AcquisitionFrameRateEnabled", True)
         set_op_float(self._camera.GetNodeMap(), "AcquisitionFrameRate", sampling_rate.value)
@@ -229,7 +229,7 @@ class SpinnakerDriver(CameraDriver):
         color_space.value = self._color_space
         return color_space
 
-    def set_color_space(self, color_space: ColorSpace):
+    def set_color_space(self, color_space: ColorSpace) -> None:
         if not self._camera.IsStreaming():
             if color_space.value == ColorSpaces.Value("RGB"):
                 self._color_space = color_space.value
@@ -257,7 +257,7 @@ class SpinnakerDriver(CameraDriver):
         image_format.compression.value = self._compression_level
         return image_format
 
-    def set_format(self, image_format: ImageFormat):
+    def set_format(self, image_format: ImageFormat) -> None:
         if image_format.format == ImageFormats.Value("JPEG"):
             self._encode_format = ImageFormats.Value("JPEG")
         elif image_format.format == ImageFormats.Value("PNG"):
@@ -287,7 +287,7 @@ class SpinnakerDriver(CameraDriver):
         bottom_right.y = top_left.y + get_op_int(self._camera.GetNodeMap(), "Height")
         return roi
 
-    def set_region_of_interest(self, roi: BoundingPoly):
+    def set_region_of_interest(self, roi: BoundingPoly) -> None:
         if not self._camera.IsStreaming():
             if (len(roi.vertices) > 2) or (len(roi.vertices) < 2):
                 raise StatusException(
@@ -327,7 +327,7 @@ class SpinnakerDriver(CameraDriver):
     #     resolution.height = height
     #     return resolution
 
-    def get_white_balance(self, choice: str):
+    def get_white_balance(self, choice: str) -> CameraSetting:
         if self._color_space != ColorSpaces.Value("RGB"):
             raise StatusException(
                 code=StatusCode.INTERNAL_ERROR,
@@ -345,7 +345,7 @@ class SpinnakerDriver(CameraDriver):
             setting.ratio = get_ratio(value, value_range[0], value_range[1])
         return setting
 
-    def set_white_balance(self, white_balance: CameraSetting, choice: str):
+    def set_white_balance(self, white_balance: CameraSetting, choice: str) -> None:
         if self._color_space != ColorSpaces.Value("RGB"):
             raise StatusException(
                 code=StatusCode.INTERNAL_ERROR,
@@ -363,13 +363,13 @@ class SpinnakerDriver(CameraDriver):
     def get_white_balance_bu(self) -> CameraSetting:
         return self.get_white_balance(choice="Blue")
 
-    def set_white_balance_bu(self, white_balance_bu: CameraSetting):
+    def set_white_balance_bu(self, white_balance_bu: CameraSetting) -> None:
         self.set_white_balance(white_balance=white_balance_bu, choice="Blue")
 
     def get_white_balance_rv(self) -> CameraSetting:
         return self.get_white_balance(choice="Red")
 
-    def set_white_balance_rv(self, white_balance_rv: CameraSetting):
+    def set_white_balance_rv(self, white_balance_rv: CameraSetting) -> None:
         self.set_white_balance(white_balance=white_balance_rv, choice="Red")
 
     def get_gain(self) -> CameraSetting:
@@ -381,7 +381,7 @@ class SpinnakerDriver(CameraDriver):
         setting.ratio = get_ratio(value, value_range[0], value_range[1])
         return setting
 
-    def set_gain(self, gain: CameraSetting):
+    def set_gain(self, gain: CameraSetting) -> None:
         if gain.automatic:
             set_op_enum(self._camera.GetNodeMap(), "GainAuto", "Continuous")
         else:
@@ -390,7 +390,7 @@ class SpinnakerDriver(CameraDriver):
             value = get_value(gain.ratio, value_range[0], value_range[1])
             set_op_float(self._camera.GetNodeMap(), "Gain", value)
 
-    def get_brightness(self):
+    def get_brightness(self) -> CameraSetting:
         setting = CameraSetting()
         value = get_op_float(self._camera.GetNodeMap(), "BlackLevel")
         value_range = minmax_op_float(self._camera.GetNodeMap(), "BlackLevel")
@@ -412,7 +412,7 @@ class SpinnakerDriver(CameraDriver):
         setting.ratio = get_ratio(value, value_range[0], value_range[1])
         return setting
 
-    def set_shutter(self, shutter: CameraSetting):
+    def set_shutter(self, shutter: CameraSetting) -> None:
         if shutter.automatic:
             set_op_enum(self._camera.GetNodeMap(), "ExposureAuto", "Continuous")
         else:
@@ -421,21 +421,21 @@ class SpinnakerDriver(CameraDriver):
             value = get_value(shutter.ratio, value_range[0], value_range[1])
             set_op_float(self._camera.GetNodeMap(), "ExposureTime", value)
 
-    def set_reverse_x(self, reverse_x: bool):
+    def set_reverse_x(self, reverse_x: bool) -> None:
         set_op_bool(self._camera.GetNodeMap(), "ReverseX", reverse_x)
 
-    def set_packet_size(self, packet_size: int):
+    def set_packet_size(self, packet_size: int) -> None:
         set_op_int(self._camera.GetNodeMap(), "GevSCPSPacketSize", packet_size)
 
-    def set_packet_delay(self, packet_delay: int):
+    def set_packet_delay(self, packet_delay: int) -> None:
         set_op_int(self._camera.GetNodeMap(), "GevSCPD", packet_delay)
 
-    def set_packet_resend(self, packet_resend: bool):
+    def set_packet_resend(self, packet_resend: bool) -> None:
         set_op_bool(self._camera.GetTLStreamNodeMap(), "StreamPacketResendEnable", packet_resend)
 
-    def set_packet_resend_timeout(self, timeout: int):
+    def set_packet_resend_timeout(self, timeout: int) -> None:
         set_op_int(self._camera.GetTLStreamNodeMap(), "StreamPacketResendTimeout", timeout)
 
-    def set_packet_resend_max_requests(self, max_requests: int):
+    def set_packet_resend_max_requests(self, max_requests: int) -> None:
         set_op_int(self._camera.GetTLStreamNodeMap(), "StreamPacketResendMaxRequests",
                    max_requests)

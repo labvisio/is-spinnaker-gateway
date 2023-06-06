@@ -17,7 +17,7 @@ from PySpin import (
 from is_spinnaker_gateway.exceptions import StatusException
 
 
-def is_readable(node: INode):
+def is_readable(node: INode) -> None:
     if not IsAvailable(node):
         raise StatusException(
             code=StatusCode.INTERNAL_ERROR,
@@ -30,7 +30,7 @@ def is_readable(node: INode):
         )
 
 
-def is_writible(node: INode):
+def is_writible(node: INode) -> None:
     if not IsAvailable(node):
         raise StatusException(
             code=StatusCode.INTERNAL_ERROR,
@@ -55,7 +55,7 @@ def get_op_bool(node_map: INodeMap, name: str) -> bool:
         ) from ex
 
 
-def set_op_bool(node_map: INodeMap, name: str, value: bool):
+def set_op_bool(node_map: INodeMap, name: str, value: bool) -> None:
     node = CBooleanPtr(node_map.GetNode(name))
     is_writible(node)
     try:
@@ -79,7 +79,7 @@ def get_op_int(node_map: INodeMap, name: str) -> int:
         ) from ex
 
 
-def set_op_int(node_map: INodeMap, name: str, value: int):
+def set_op_int(node_map: INodeMap, name: str, value: int) -> None:
     node = CIntegerPtr(node_map.GetNode(name))
     is_writible(node)
     min_value = node.GetMin()
@@ -111,7 +111,7 @@ def get_op_float(node_map: INodeMap, name: str) -> float:
         ) from ex
 
 
-def set_op_float(node_map: INodeMap, name: str, value: float):
+def set_op_float(node_map: INodeMap, name: str, value: float) -> None:
     node = CFloatPtr(node_map.GetNode(name))
     is_writible(node)
     min_value = node.GetMin()
@@ -143,7 +143,7 @@ def get_op_str(node_map: INodeMap, name: str) -> str:
         ) from ex
 
 
-def set_op_enum(node_map: INodeMap, name: str, value: str):
+def set_op_enum(node_map: INodeMap, name: str, value: str) -> None:
     node = CEnumerationPtr(node_map.GetNode(name))
     is_writible(node)
     try:
@@ -192,9 +192,9 @@ def minmax_op_int(node_map: INodeMap, name: str) -> Tuple[int, int]:
         ) from ex
 
 
-def get_value(ratio: float, min_value: float, max_value: float):
+def get_value(ratio: float, min_value: float, max_value: float) -> float:
     return (ratio * ((max_value - min_value))) + min_value
 
 
-def get_ratio(value: float, min_value: float, max_value: float):
+def get_ratio(value: float, min_value: float, max_value: float) -> float:
     return (value - min_value) / (max_value - min_value)
