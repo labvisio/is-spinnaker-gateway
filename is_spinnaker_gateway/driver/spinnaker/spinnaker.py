@@ -3,6 +3,7 @@ from typing import Union, List
 import cv2
 import PySpin
 import numpy as np
+import numpy.typing as npt
 
 from turbojpeg import TurboJPEG
 from is_wire.core import Status, StatusCode
@@ -165,7 +166,7 @@ class SpinnakerDriver(CameraDriver):
         if self._camera.IsStreaming():
             self._camera.EndAcquisition()
 
-    def to_array(self, image: PySpin.ImagePtr) -> np.ndarray:
+    def to_array(self, image: PySpin.ImagePtr) -> npt.NDArray[np.uint8]:
         if not self._onboard_color_processing:
             if self._color_space == ColorSpaces.Value("RGB"):
                 bgr = self._processor.Convert(image, PySpin.PixelFormat_BGR8)
