@@ -241,7 +241,8 @@ class CameraGateway:
         if not zipkin_ok:
             self.logger.critical("Invalid zipkin uri {}, \
                                  expected http://<hostname>:<port>".format(uri))
-        return zipkin_ok.group(1), int(zipkin_ok.group(3))
+        else:
+            return zipkin_ok.group(1), int(zipkin_ok.group(3))
 
     @staticmethod
     def span_duration_ms(span: Span) -> float:
