@@ -61,13 +61,12 @@ all: install build test lint
 install: venv
 	: # Activate venv and install something inside
 	@. .venv/bin/activate && (\
-    	pip3 install .[dev]; \
-    	pip3 install --upgrade protobuf==3.20.3 \
+    	pip3 install .[dev] \
 	)
 
 venv:
-	: # Create venv if it doesn't exist
-	test -d .venv || python3 -m venv .venv
+	: # Create venv
+	python3 -m venv .venv
 	@. .venv/bin/activate && (\
     	pip3 install --upgrade pip wheel \
 	)
@@ -78,8 +77,7 @@ build:
 	. .venv/bin/activate && pip -V
 	: # rebuild
 	@. .venv/bin/activate && (\
-    	pip3 install .; \
-    	pip3 install --upgrade protobuf==3.20.3 \
+    	pip3 install . \
 	)
 
 test:

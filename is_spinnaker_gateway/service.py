@@ -7,7 +7,7 @@ from is_spinnaker_gateway.gateway import CameraGateway
 from is_spinnaker_gateway.conf.options_pb2 import CameraGatewayOptions
 
 
-def load_json(logger: Logger,
+def load_json(logger: Logger, # type: ignore[return]
               path: str = "/etc/is-spinnaker-gateway/options.json") -> CameraGatewayOptions:
     try:
         with open(path, 'r') as f:
@@ -21,7 +21,7 @@ def load_json(logger: Logger,
         logger.critical('Unable to open file \'{}\'', path)
 
 
-def main():
+def main() -> None:
     if len(sys.argv) > 1:
         options_filename = sys.argv[1]
     else:

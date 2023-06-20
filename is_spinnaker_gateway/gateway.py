@@ -2,7 +2,7 @@ import re
 import time
 import socket
 
-from typing import Tuple, Union
+from typing import Tuple, Union, Optional, Match, Any
 
 from dateutil import parser as dp
 from google.protobuf.empty_pb2 import Empty
@@ -208,7 +208,7 @@ class CameraGateway:
         except StatusException as ex:
             return ex.status
 
-    def restart(self):
+    def restart(self) -> None:
         # get current configuration
         selector = FieldSelector(fields=[CameraConfigFields.Value("ALL")])
         config = self.get_config(field_selector=selector, ctx=None)
@@ -236,12 +236,13 @@ class CameraGateway:
                                   Code={}, why={}".format(maybe_ok.code, maybe_ok.why))
         self.driver.start_capture()
 
-    def get_zipkin(self, uri: str) -> Tuple[str, str]:
+    def get_zipkin(self, uri: str) -> Tuple[Union[str, Any], Union[str, Any]]: # type: ignore[return]
         zipkin_ok = re.match("http:\\/\\/([a-zA-Z0-9\\.]+)(:(\\d+))?", uri)
         if not zipkin_ok:
             self.logger.critical("Invalid zipkin uri {}, \
                                  expected http://<hostname>:<port>".format(uri))
-        return zipkin_ok.group(1), int(zipkin_ok.group(3))
+        else:
+            return zipkin_ok.group(1), int(zipkin_ok.group(3))
 
     @staticmethod
     def span_duration_ms(span: Span) -> float:
@@ -263,7 +264,7 @@ class CameraGateway:
         exporter = ZipkinExporter(
             service_name=service_name,
             host_name=zipkin_uri,
-            port=zipkin_port,
+            port=int(zipkin_port),
             transport=AsyncTransport,
         )
 

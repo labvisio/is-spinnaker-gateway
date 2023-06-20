@@ -48,6 +48,7 @@ setup(
             'pytest==7.2.1',
             'pytest-cov==4.0.0',
             'flake8==6.0.0',
+            'mypy==1.3.0'
         ],
     },
     entry_points={

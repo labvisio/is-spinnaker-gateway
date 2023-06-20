@@ -17,7 +17,7 @@ class CameraDriver:
             message="Resolution property not implemented for this camera.",
         )
 
-    def set_resolution(self, resolution: Resolution):
+    def set_resolution(self, resolution: Resolution) -> None:
         raise StatusException(
             code=StatusCode.INTERNAL_ERROR,
             message="Resolution property not implemented for this camera.",
@@ -29,7 +29,7 @@ class CameraDriver:
             message="ImageFormat property not implemented for this camera.",
         )
 
-    def set_format(self, image_format: ImageFormat):
+    def set_format(self, image_format: ImageFormat) -> None:
         raise StatusException(
             code=StatusCode.INTERNAL_ERROR,
             message="ImageFormat property not implemented for this camera.",
@@ -41,7 +41,7 @@ class CameraDriver:
             message="ColorSpace property not implemented for this camera.",
         )
 
-    def set_color_space(self, color_space: ColorSpace):
+    def set_color_space(self, color_space: ColorSpace) -> None:
         raise StatusException(
             code=StatusCode.INTERNAL_ERROR,
             message="ColorSpace property not implemented for this camera.",
@@ -53,7 +53,7 @@ class CameraDriver:
             message="RegionOfInterest property not implemented for this camera.",
         )
 
-    def set_region_of_interest(self, roi: BoundingPoly):
+    def set_region_of_interest(self, roi: BoundingPoly) -> None:
         raise StatusException(
             code=StatusCode.INTERNAL_ERROR,
             message="RegionOfInterest property not implemented for this camera.",
@@ -65,7 +65,7 @@ class CameraDriver:
             message="SamplingRate property not implemented for this camera.",
         )
 
-    def set_sampling_rate(self, sampling_rate: FloatValue):
+    def set_sampling_rate(self, sampling_rate: FloatValue) -> None:
         raise StatusException(
             code=StatusCode.INTERNAL_ERROR,
             message="SamplingRate property not implemented for this camera.",
@@ -77,7 +77,7 @@ class CameraDriver:
             message="Delay property not implemented for this camera.",
         )
 
-    def set_delay(self, delay: FloatValue):
+    def set_delay(self, delay: FloatValue) -> None:
         raise StatusException(
             code=StatusCode.INTERNAL_ERROR,
             message="Delay property not implemented for this camera.",
@@ -89,7 +89,7 @@ class CameraDriver:
             message="Brightness property not implemented for this camera.",
         )
 
-    def set_brightness(self, brightness: CameraSetting):
+    def set_brightness(self, brightness: CameraSetting) -> None:
         raise StatusException(
             code=StatusCode.INTERNAL_ERROR,
             message="Brightness property not implemented for this camera.",
@@ -101,7 +101,7 @@ class CameraDriver:
             message="Brightness property not implemented for this camera.",
         )
 
-    def set_exposure(self, exposure: CameraSetting):
+    def set_exposure(self, exposure: CameraSetting) -> None:
         raise StatusException(
             code=StatusCode.INTERNAL_ERROR,
             message="Exposure property not implemented for this camera.",
@@ -113,7 +113,7 @@ class CameraDriver:
             message="Focus property not implemented for this camera.",
         )
 
-    def set_focus(self, focus: CameraSetting):
+    def set_focus(self, focus: CameraSetting) -> None:
         raise StatusException(
             code=StatusCode.INTERNAL_ERROR,
             message="Focus property not implemented for this camera.",
@@ -125,7 +125,7 @@ class CameraDriver:
             message="Gain property not implemented for this camera.",
         )
 
-    def set_gain(self, gain: CameraSetting):
+    def set_gain(self, gain: CameraSetting) -> None:
         raise StatusException(
             code=StatusCode.INTERNAL_ERROR,
             message="Gain property not implemented for this camera.",
@@ -137,7 +137,7 @@ class CameraDriver:
             message="Gamma property not implemented for this camera.",
         )
 
-    def set_gamma(self, gamma: CameraSetting):
+    def set_gamma(self, gamma: CameraSetting) -> None:
         raise StatusException(
             code=StatusCode.INTERNAL_ERROR,
             message="Gamma property not implemented for this camera.",
@@ -149,7 +149,7 @@ class CameraDriver:
             message="Hue property not implemented for this camera.",
         )
 
-    def set_hue(self, hue: CameraSetting):
+    def set_hue(self, hue: CameraSetting) -> None:
         raise StatusException(
             code=StatusCode.INTERNAL_ERROR,
             message="Hue property not implemented for this camera.",
@@ -161,7 +161,7 @@ class CameraDriver:
             message="Iris property not implemented for this camera.",
         )
 
-    def set_iris(self, iris: CameraSetting):
+    def set_iris(self, iris: CameraSetting) -> None:
         raise StatusException(
             code=StatusCode.INTERNAL_ERROR,
             message="Iris property not implemented for this camera.",
@@ -173,7 +173,7 @@ class CameraDriver:
             message="Saturation property not implemented for this camera.",
         )
 
-    def set_saturation(self, saturation: CameraSetting):
+    def set_saturation(self, saturation: CameraSetting) -> None:
         raise StatusException(
             code=StatusCode.INTERNAL_ERROR,
             message="Saturation property not implemented for this camera.",
@@ -185,7 +185,7 @@ class CameraDriver:
             message="Sharpness property not implemented for this camera.",
         )
 
-    def set_sharpness(self, sharpness: CameraSetting):
+    def set_sharpness(self, sharpness: CameraSetting) -> None:
         raise StatusException(
             code=StatusCode.INTERNAL_ERROR,
             message="Sharpness property not implemented for this camera.",
@@ -197,7 +197,7 @@ class CameraDriver:
             message="Shutter property not implemented for this camera.",
         )
 
-    def set_shutter(self, shutter: CameraSetting):
+    def set_shutter(self, shutter: CameraSetting) -> None:
         raise StatusException(
             code=StatusCode.INTERNAL_ERROR,
             message="Shutter property not implemented for this camera.",
@@ -209,7 +209,7 @@ class CameraDriver:
             message="WhiteBalanceBU property not implemented for this camera.",
         )
 
-    def set_white_balance_bu(self, white_balance_bu: CameraSetting):
+    def set_white_balance_bu(self, white_balance_bu: CameraSetting) -> None:
         raise StatusException(
             code=StatusCode.INTERNAL_ERROR,
             message="WhiteBalanceBU property not implemented for this camera.",
@@ -221,7 +221,7 @@ class CameraDriver:
             message="WhiteBalanceRV property not implemented for this camera.",
         )
 
-    def set_white_balance_rv(self, white_balance_rv: CameraSetting):
+    def set_white_balance_rv(self, white_balance_rv: CameraSetting) -> None:
         raise StatusException(
             code=StatusCode.INTERNAL_ERROR,
             message="WhiteBalanceRV property not implemented for this camera.",
@@ -233,7 +233,7 @@ class CameraDriver:
             message="Zoom property not implemented for this camera.",
         )
 
-    def set_zoom(self, zoom: CameraSetting):
+    def set_zoom(self, zoom: CameraSetting) -> None:
         raise StatusException(
             code=StatusCode.INTERNAL_ERROR,
             message="Zoom property not implemented for this camera.",
@@ -245,16 +245,16 @@ class CameraDriver:
             message="StreamChannelID property not implemented for this camera.",
         )
 
-    def set_stream_channel_id(self, stream_channel_id: Int64Value):
+    def set_stream_channel_id(self, stream_channel_id: Int64Value) -> None:
         raise StatusException(
             code=StatusCode.INTERNAL_ERROR,
             message="StreamChannelID property not implemented for this camera.",
         )
 
-    def start_capture(self):
+    def start_capture(self) -> None:
         raise NotImplementedError("Driver subclass must implement 'start_capture' method.")
 
-    def stop_capture(self):
+    def stop_capture(self) -> None:
         raise NotImplementedError("Driver subclass must implement 'stop_capture' method.")
 
     def grab_image(self) -> Any:
