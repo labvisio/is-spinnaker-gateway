@@ -1,26 +1,22 @@
 import re
-import time
 import socket
-
-from typing import Tuple, Union, Optional, Match, Any
+import time
+from typing import Any, Tuple, Union
 
 from dateutil import parser as dp
 from google.protobuf.empty_pb2 import Empty
-
-from opencensus.trace.span import Span
-from opencensus.ext.zipkin.trace_exporter import ZipkinExporter
-
-from is_wire.rpc.context import Context
-from is_wire.rpc import ServiceProvider, LogInterceptor, TracingInterceptor
-from is_wire.core import Channel, Message, AsyncTransport, Tracer, Status
-
-from is_msgs.common_pb2 import FieldSelector
 from is_msgs.camera_pb2 import CameraConfig, CameraConfigFields
+from is_msgs.common_pb2 import FieldSelector
+from is_wire.core import AsyncTransport, Channel, Message, Status, Tracer
+from is_wire.rpc import LogInterceptor, ServiceProvider, TracingInterceptor
+from is_wire.rpc.context import Context
+from opencensus.ext.zipkin.trace_exporter import ZipkinExporter
+from opencensus.trace.span import Span
 
-from is_spinnaker_gateway.logger import Logger
 from is_spinnaker_gateway.conf.options_pb2 import Camera
-from is_spinnaker_gateway.exceptions import StatusException
 from is_spinnaker_gateway.driver.spinnaker.spinnaker import SpinnakerDriver
+from is_spinnaker_gateway.exceptions import StatusException
+from is_spinnaker_gateway.logger import Logger
 
 
 class CameraGateway:
@@ -232,15 +228,20 @@ class CameraGateway:
         # apply last configuration
         maybe_ok = self.set_config(config=config, ctx=None)
         if isinstance(maybe_ok, Status):
-            self.logger.critical("Failed to set previous configuration.\n \
-                                  Code={}, why={}".format(maybe_ok.code, maybe_ok.why))
+            self.logger.critical(
+                "Failed to set previous configuration.\nCode={}, why={}",
+                maybe_ok.code,
+                maybe_ok.why,
+            )
         self.driver.start_capture()
 
-    def get_zipkin(self, uri: str) -> Tuple[Union[str, Any], Union[str, Any]]: # type: ignore[return]
+    def get_zipkin(  # type: ignore[return]
+        self,
+        uri: str,
+    ) -> Tuple[Union[str, Any], Union[str, Any]]:
         zipkin_ok = re.match("http:\\/\\/([a-zA-Z0-9\\.]+)(:(\\d+))?", uri)
         if not zipkin_ok:
-            self.logger.critical("Invalid zipkin uri {}, \
-                                 expected http://<hostname>:<port>".format(uri))
+            self.logger.critical("Invalid zipkin uri {}, expected http://<hostname>:<port>", uri)
         else:
             return zipkin_ok.group(1), int(zipkin_ok.group(3))
 
@@ -253,8 +254,11 @@ class CameraGateway:
         service_name = "CameraGateway"
         maybe_ok = self.set_config(config=self.config, ctx=None)
         if isinstance(maybe_ok, Status):
-            self.logger.critical("Failed to set initial configuration.\n \
-                                  Code={}, why={}".format(maybe_ok.code, maybe_ok.why))
+            self.logger.critical(
+                "Failed to set initial configuration.\nCode={}, why={}",
+                maybe_ok.code,
+                maybe_ok.why,
+            )
         time.sleep(2)
 
         publish_channel = Channel(self.broker_uri)
@@ -307,7 +311,7 @@ class CameraGateway:
                     span = _span
                     publish_channel.publish(message=message)
                 took_ms = round(self.span_duration_ms(span), 2)
-                self.logger.info("Publish image, took_ms={}".format(took_ms))
+                self.logger.info("Publish image, took_ms={}", took_ms)
                 try:
                     message = rpc_channel.consume(timeout=0)
                     if server.should_serve(message):

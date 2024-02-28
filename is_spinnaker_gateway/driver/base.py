@@ -1,10 +1,9 @@
 from typing import Any
 
-from is_wire.core import StatusCode
 from google.protobuf.wrappers_pb2 import FloatValue, Int64Value
-
 from is_msgs.camera_pb2 import CameraSetting
-from is_msgs.image_pb2 import Image, Resolution, ColorSpace, ImageFormat, BoundingPoly
+from is_msgs.image_pb2 import BoundingPoly, ColorSpace, Image, ImageFormat, Resolution
+from is_wire.core import StatusCode
 
 from is_spinnaker_gateway.exceptions import StatusException
 

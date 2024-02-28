@@ -1,13 +1,12 @@
 import socket
 
 from google.protobuf.empty_pb2 import Empty
-from is_wire.core import Channel, Subscription, Message
-
-from is_msgs.image_pb2 import ImageFormats
 from is_msgs.camera_pb2 import CameraConfig
+from is_msgs.image_pb2 import ImageFormats
+from is_wire.core import Channel, Message, Subscription
 
 
-def main():
+def main() -> None:
     channel = Channel(uri="amqp://guest:guest@localhost:5672")
     subscription = Subscription(channel)
     config = CameraConfig()
