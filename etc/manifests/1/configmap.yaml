@@ -10,6 +10,7 @@ data:
     {
       "rabbitmq_uri": "amqp://rabbitmq.default",
       "zipkin_uri" : "http://zipkin.default:9411",
+      "enable_tracing": false,
       "camera": {
         "id": 1,
         "ip": "10.20.6.1",

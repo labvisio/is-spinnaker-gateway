@@ -47,14 +47,16 @@ class Camera(_message.Message):
     def __init__(self, id: Optional[int] = ..., ip: Optional[str] = ..., algorithm: Optional[Union[ColorProcessingAlgorithm, str]] = ..., onboard_color_processing: bool = ..., use_turbojpeg: bool = ..., packet_size: Optional[int] = ..., packet_delay: Optional[int] = ..., packet_resend: bool = ..., packet_resend_timeout: Optional[int] = ..., packet_resend_max_requests: Optional[int] = ..., reverse_x: bool = ..., restart_period: Optional[float] = ..., initial_config: Optional[Union[_camera_pb2.CameraConfig, Mapping]] = ...) -> None: ...
 
 class CameraGatewayOptions(_message.Message):
-    __slots__ = ["camera", "rabbitmq_uri", "zipkin_uri"]
+    __slots__ = ["camera", "enable_tracing", "rabbitmq_uri", "zipkin_uri"]
     CAMERA_FIELD_NUMBER: ClassVar[int]
+    ENABLE_TRACING_FIELD_NUMBER: ClassVar[int]
     RABBITMQ_URI_FIELD_NUMBER: ClassVar[int]
     ZIPKIN_URI_FIELD_NUMBER: ClassVar[int]
     camera: Camera
+    enable_tracing: bool
     rabbitmq_uri: str
     zipkin_uri: str
-    def __init__(self, rabbitmq_uri: Optional[str] = ..., zipkin_uri: Optional[str] = ..., camera: Optional[Union[Camera, Mapping]] = ...) -> None: ...
+    def __init__(self, rabbitmq_uri: Optional[str] = ..., zipkin_uri: Optional[str] = ..., enable_tracing: bool = ..., camera: Optional[Union[Camera, Mapping]] = ...) -> None: ...
 
 class ColorProcessingAlgorithm(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = []

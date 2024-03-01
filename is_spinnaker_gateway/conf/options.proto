@@ -84,10 +84,12 @@ message Camera {
 
 // Models the service behavior.
 message CameraGatewayOptions {
-  // RabbitMQ uri (e.g.: 'amqp://guest:guest@localhost:5672')
+  // RabbitMQ uri (e.g.: 'amqp://guest:guest@localhost:5672').
   string rabbitmq_uri = 1;
-  // Zipkin uri (e.g: 'http://localhost:9411')
+  // Zipkin uri (e.g: 'http://localhost:9411').
   string zipkin_uri = 2;
+  // Enable/disable tracing.
+  bool enable_tracing = 3;
   // Camera gateway and driver configurations.
-  Camera camera = 3;
+  Camera camera = 4;
 }

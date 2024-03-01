@@ -38,6 +38,7 @@ def main() -> None:
         broker_uri=options.rabbitmq_uri,
         zipkin_uri=options.zipkin_uri,
         camera=options.camera,
+        enable_tracing=options.enable_tracing,
     )
     gateway.run()
 

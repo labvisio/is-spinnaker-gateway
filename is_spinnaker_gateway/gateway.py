@@ -21,11 +21,19 @@ from is_spinnaker_gateway.logger import Logger
 
 class CameraGateway:
 
-    def __init__(self, logger: Logger, broker_uri: str, zipkin_uri: str, camera: Camera):
+    def __init__(
+        self,
+        logger: Logger,
+        broker_uri: str,
+        zipkin_uri: str,
+        enable_tracing: bool,
+        camera: Camera,
+    ) -> None:
         self.logger = logger
         self.camera = camera
         self.broker_uri = broker_uri
         self.zipkin_uri = zipkin_uri
+        self.enable_tracing = enable_tracing
         self.config = self.camera.initial_config
         self.driver = SpinnakerDriver(
             compression_level=0.8,
@@ -264,32 +272,32 @@ class CameraGateway:
         publish_channel = Channel(self.broker_uri)
         rpc_channel = Channel(self.broker_uri)
 
-        zipkin_uri, zipkin_port = self.get_zipkin(uri=self.zipkin_uri)
-        exporter = ZipkinExporter(
-            service_name=service_name,
-            host_name=zipkin_uri,
-            port=int(zipkin_port),
-            transport=AsyncTransport,
-        )
-
         server = ServiceProvider(channel=rpc_channel)
         logging = LogInterceptor()
         logging.log.logger.propagate = False
-        tracing = TracingInterceptor(exporter=exporter)
         server.add_interceptor(interceptor=logging)
-        server.add_interceptor(interceptor=tracing)
         server.delegate(
-            topic="{}.{}.GetConfig".format(service_name, self.camera.id),
+            topic=f"{service_name}.{self.camera.id}.GetConfig",
             request_type=FieldSelector,
             reply_type=CameraConfig,
             function=self.get_config,
         )
         server.delegate(
-            topic="{}.{}.SetConfig".format(service_name, self.camera.id),
+            topic=f"{service_name}.{self.camera.id}.SetConfig",
             request_type=CameraConfig,
             reply_type=Empty,
             function=self.set_config,
         )
+        if self.enable_tracing:
+            zipkin_uri, zipkin_port = self.get_zipkin(uri=self.zipkin_uri)
+            exporter = ZipkinExporter(
+                service_name=service_name,
+                host_name=zipkin_uri,
+                port=int(zipkin_port),
+                transport=AsyncTransport,
+            )
+            tracing = TracingInterceptor(exporter=exporter)
+            server.add_interceptor(interceptor=tracing)
         self.logger.info("RPC listening for requests")
         self.driver.start_capture()
 
@@ -297,21 +305,31 @@ class CameraGateway:
         while True:
             now = time.perf_counter()
             if now >= timeout:
+                self.logger.info("Restarting...")
                 self.restart()
                 timeout = time.perf_counter() + self.camera.restart_period
             image = self.driver.grab_image()
             if image is not None:
-                tracer = Tracer(exporter=exporter)
-                span = None
-                with tracer.span(name="frame") as _span:
+                if self.enable_tracing:
+                    tracer = Tracer(exporter=exporter)
+                    span = None
+                    with tracer.span(name="frame") as _span:
+                        message = Message()
+                        message.topic = f"{service_name}.{self.camera.id}.Frame"
+                        message.pack(self.driver.to_image(image))
+                        message.inject_tracing(_span)
+                        span = _span
+                        publish_channel.publish(message=message)
+                    took_ms = round(self.span_duration_ms(span), 2)
+                    self.logger.info("Publish image, took_ms={}", took_ms)
+                else:
+                    ti = time.perf_counter()
                     message = Message()
-                    message.topic = "{}.{}.Frame".format(service_name, self.camera.id)
+                    message.topic = f"{service_name}.{self.camera.id}.Frame"
                     message.pack(self.driver.to_image(image))
-                    message.inject_tracing(_span)
-                    span = _span
                     publish_channel.publish(message=message)
-                took_ms = round(self.span_duration_ms(span), 2)
-                self.logger.info("Publish image, took_ms={}", took_ms)
+                    took_ms = (time.perf_counter() - ti) * 1000
+                    self.logger.info("Publish image, took_ms={}", took_ms)
                 try:
                     message = rpc_channel.consume(timeout=0)
                     if server.should_serve(message):
