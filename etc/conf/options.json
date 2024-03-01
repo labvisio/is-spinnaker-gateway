@@ -7,13 +7,14 @@
     "algorithm": "WEIGHTED_DIRECTIONAL_FILTER",
     "onboard_color_processing": false,
     "packet_size": 1400,
-    "packet_delay": 2000,
+    "packet_delay": 5000,
     "packet_resend": true,
     "packet_resend_timeout": 100,
     "packet_resend_max_requests": 10000,
     "reverse_x": false,
     "use_turbojpeg": true,
     "restart_period": 3600,
+    "enable_tracing": false,
     "initial_config": {
       "sampling": {
         "frequency": 10.0
