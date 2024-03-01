@@ -4,7 +4,7 @@ from is_spinnaker_gateway.conf.options_pb2 import ColorProcessingAlgorithm
 from is_spinnaker_gateway.driver.spinnaker.spinnaker import SpinnakerDriver
 
 
-def main():
+def main() -> None:
     driver = SpinnakerDriver(
         use_turbojpeg=False,
         compression_level=0.8,
