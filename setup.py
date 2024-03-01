@@ -1,18 +1,22 @@
-import os
 import glob
+import os
 
-from setuptools import setup, find_packages
-
-package_name = 'is_spinnaker_gateway'
+from setuptools import find_packages, setup
 
 setup(
-    name=package_name,
-    version='0.2.0',
-    description='Gateway for BlackFly GigE camera models using Spinnaker SDK.',
+    name="is_spinnaker_gateway",
+    version="0.3.0",
+    description="Gateway for Blackfly and Blackfly S GigE camera models using Spinnaker SDK.",
     long_description=open("README.md").read().strip(),
     long_description_content_type="text/markdown",
-    keywords=['spinnaker', 'blackfly', 'camera', 'gateway'],
-    license='MIT',
+    keywords=[
+        "spinnaker",
+        "blackfly",
+        "blackfly-s",
+        "camera",
+        "gateway",
+    ],
+    license="MIT",
     packages=find_packages(exclude=[
         "tests*",
         "examples*",
@@ -39,24 +43,24 @@ setup(
         "typing-extensions==4.10.0",
     ],
     zip_safe=False,
-    author=['LabVISIO'],
-    author_email=['labvisio.ufes@gmail.com'],
+    author=["LabVISIO"],
+    author_email=["labvisio.ufes@gmail.com"],
     classifiers=[
-        'Intended Audience :: Developers',
-        'Programming Language :: Python :: 3'
-        'Programming Language :: Python :: 3 :: Only',
+        "Intended Audience :: Developers",
+        "Programming Language :: Python :: 3"
+        "Programming Language :: Python :: 3 :: Only",
     ],
     extras_require={
-        'dev': [
-            'pytest==7.2.1',
-            'pytest-cov==4.0.0',
-            'flake8==6.0.0',
-            'mypy==1.3.0'
+        "dev": [
+            "pytest==8.0.2",
+            "pytest-cov==4.1.0",
+            "flake8==7.0.0",
+            "mypy==1.8.0",
         ],
     },
     entry_points={
-        'console_scripts': [
-            'is-spinnaker-gateway=is_spinnaker_gateway.service:main',
+        "console_scripts": [
+            "is-spinnaker-gateway=is_spinnaker_gateway.service:main",
         ],
     },
 )
