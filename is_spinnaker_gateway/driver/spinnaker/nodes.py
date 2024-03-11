@@ -1,4 +1,4 @@
-from typing import Tuple, TypeVar, ParamSpec, Callable
+from typing import Callable, ParamSpec, Tuple, TypeVar
 
 from is_wire.core import StatusCode
 from PySpin import (

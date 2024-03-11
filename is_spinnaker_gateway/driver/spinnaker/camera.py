@@ -1,7 +1,7 @@
 import time
 from queue import Empty, Queue
 from threading import Thread
-from typing import List, Optional
+from typing import List
 
 import cv2
 import numpy as np

@@ -7,14 +7,13 @@ from dateutil import parser as dp
 from google.protobuf.empty_pb2 import Empty
 from is_msgs.camera_pb2 import CameraConfig, CameraConfigFields
 from is_msgs.common_pb2 import FieldSelector
-from is_wire.core import AsyncTransport, Channel, Message, Status, Tracer, Subscription
+from is_wire.core import AsyncTransport, Channel, Message, Status, Tracer
 from is_wire.rpc import LogInterceptor, ServiceProvider, TracingInterceptor
 from is_wire.rpc.context import Context
 from opencensus.ext.zipkin.trace_exporter import ZipkinExporter
 from opencensus.trace.span import Span
 
 from is_spinnaker_gateway.conf.options_pb2 import Camera
-from is_spinnaker_gateway.driver.interface import CameraInfo
 from is_spinnaker_gateway.driver.spinnaker import SpinnakerDriver
 from is_spinnaker_gateway.exceptions import StatusException
 from is_spinnaker_gateway.logger import Logger
@@ -46,13 +45,14 @@ class CameraGateway:
         cam = next((item for item in cams if item["interface"]["ip_address"] == self._camera.ip), None)
         if cam is None:
             self._logger.critical("[Connect]: Can't find camera with ip address {}", self._camera.ip)
-        self._driver.connect(cam_info=cam, max_retries=10)
-        self._driver.set_reverse_x(reverse_x=self._camera.reverse_x)
-        self._driver.set_packet_size(self._camera.packet_size)
-        self._driver.set_packet_delay(self._camera.packet_delay)
-        self._driver.set_packet_resend(self._camera.packet_resend)
-        self._driver.set_packet_resend_timeout(self._camera.packet_resend_timeout)
-        self._driver.set_packet_resend_max_requests(self._camera.packet_resend_max_requests)
+        else:
+            self._driver.connect(cam_info=cam, max_retries=10)
+            self._driver.set_reverse_x(reverse_x=self._camera.reverse_x)
+            self._driver.set_packet_size(self._camera.packet_size)
+            self._driver.set_packet_delay(self._camera.packet_delay)
+            self._driver.set_packet_resend(self._camera.packet_resend)
+            self._driver.set_packet_resend_timeout(self._camera.packet_resend_timeout)
+            self._driver.set_packet_resend_max_requests(self._camera.packet_resend_max_requests)
 
     def get_config(self, field_selector: FieldSelector, ctx: Context) -> CameraConfig:
         fields = field_selector.fields
@@ -256,6 +256,10 @@ class CameraGateway:
             reply_type=Empty,
             function=self.set_config,
         )
+        logging = LogInterceptor()
+        logging.log.logger.propagate = False
+        server.add_interceptor(interceptor=logging)
+
         if self._enable_tracing:
             zipkin_uri, zipkin_port = self.get_zipkin(uri=self._zipkin_uri)
             exporter = ZipkinExporter(

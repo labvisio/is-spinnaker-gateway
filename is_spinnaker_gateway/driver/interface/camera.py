@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import TypedDict, List
+from typing import List, TypedDict
 
 from google.protobuf.timestamp_pb2 import Timestamp
 from google.protobuf.wrappers_pb2 import FloatValue, Int64Value
