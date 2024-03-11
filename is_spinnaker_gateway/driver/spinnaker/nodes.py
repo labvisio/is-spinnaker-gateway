@@ -1,4 +1,3 @@
-import functools
 from typing import Tuple, TypeVar, ParamSpec, Callable
 
 from is_wire.core import StatusCode
@@ -20,12 +19,12 @@ P = ParamSpec("P")
 
 def get_status(func: Callable[P, R]) -> Callable[P, R]:
 
-    @functools.wraps(func)
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         try:
             return func(*args, **kwargs)
         except SpinnakerException as ex:
-            msg = f"Failed to set property '{kwargs['name']}'"
+            name = kwargs["name"] if "name" in kwargs else args[1]
+            msg = f"Failed to get property '{name}'"
             raise StatusException(code=StatusCode.INTERNAL_ERROR, message=msg) from ex
 
     return wrapper
@@ -33,12 +32,13 @@ def get_status(func: Callable[P, R]) -> Callable[P, R]:
 
 def set_status(func: Callable[P, R]) -> Callable[P, R]:
 
-    @functools.wraps(func)
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         try:
             return func(*args, **kwargs)
         except SpinnakerException as ex:
-            msg = f"Failed to set property '{kwargs['name']}' with to '{kwargs['value']}'"
+            name = kwargs["name"] if "name" in kwargs else args[1]
+            value = kwargs["value"] if "value" in kwargs else args[2]
+            msg = f"Failed to set property '{name}' with to '{value}'"
             raise StatusException(code=StatusCode.INTERNAL_ERROR, message=msg) from ex
 
     return wrapper
