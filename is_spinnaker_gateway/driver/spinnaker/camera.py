@@ -84,7 +84,7 @@ class SpinnakerDriver(CameraDriver):
         self._timestamp = Timestamp()
         self._queue: Queue = Queue()
         self._running = False
-        self._thread = Thread(target=self._reader, daemon=True)
+        self._thread: Thread = None  # type: ignore[assignment]
 
     def find_cameras(self) -> List[CameraInfo]:
         cam_infos: List[CameraInfo] = []
@@ -170,6 +170,7 @@ class SpinnakerDriver(CameraDriver):
             if not self._camera.IsStreaming():
                 self._camera.BeginAcquisition()
                 self._running = True
+                self._thread = Thread(target=self._reader, daemon=True)
                 self._thread.start()
         except PySpin.SpinnakerException as ex:
             self._logger.critical("[Start Capture]: {}", ex)
