@@ -254,11 +254,11 @@ class SpinnakerDriver(CameraDriver):
         return rate
 
     def set_sampling_rate(self, sampling_rate: FloatValue) -> None:
-        if not self._cam_info["model_name"].startswith("Blackfly S"):
+        if "BFS" in self._cam_info["model_name"]:
+            set_op_bool(self._camera.GetNodeMap(), "AcquisitionFrameRateEnable", True)
+        else:
             set_op_enum(self._camera.GetNodeMap(), "AcquisitionFrameRateAuto", "Off")
             set_op_bool(self._camera.GetNodeMap(), "AcquisitionFrameRateEnabled", True)
-        else:
-            set_op_bool(self._camera.GetNodeMap(), "AcquisitionFrameRateEnable", True)
         set_op_float(self._camera.GetNodeMap(), "AcquisitionFrameRate", sampling_rate.value)
 
     def get_delay(self) -> FloatValue:
