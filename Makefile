@@ -89,7 +89,7 @@ lint:
 	@. .venv/bin/activate && (\
     	flake8 is_spinnaker_gateway; \
     	flake8 tests; \
-    	flake8 examples; \
+    	flake8 etc/examples; \
 	)
 
 run:
