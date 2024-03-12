@@ -28,11 +28,6 @@ FROM ubuntu:22.04 as final
 RUN set -eux; \ 
     apt-get update; \
     apt-get install -y --no-install-recommends \
-        libsm6 \
-        libxext6 \
-        libglib2.0-0 \
-        libxrender-dev \
-        libgl1-mesa-glx \
         libturbojpeg \
         libavcodec58 \
         libavformat58 \
@@ -69,7 +64,7 @@ RUN set -eux; \
     dpkg -i spinnaker_*.deb; \
     dpkg -i spinnaker-doc_*.deb; \
     cd ../; \
-    rm -rf spinnaker/
+    rm -rf spinnaker/ /opt/spinnaker/doc /opt/spinnaker/src /opt/spinnaker/licenses
 
 WORKDIR /opt/is-spinnaker-gateway
 COPY --from=build /opt/is-spinnaker-gateway/.venv /opt/is-spinnaker-gateway/.venv
@@ -77,5 +72,6 @@ COPY --from=build /opt/is-spinnaker-gateway/etc/conf/options.json /etc/is-spinna
 
 ENV VIRTUAL_ENV=/opt/is-spinnaker-gateway/.venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+ENV SPINNAKER_GENTL64_CTI="/opt/spinnaker/lib/spinnaker-gentl/Spinnaker_GenTL.cti"
 
 CMD [ "is-spinnaker-gateway", "/etc/is-spinnaker-gateway/options.json" ]

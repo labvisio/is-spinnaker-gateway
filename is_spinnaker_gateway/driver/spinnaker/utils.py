@@ -1,195 +1,33 @@
-from typing import Tuple
-from is_wire.core import StatusCode
-from PySpin import (
-    INode,
-    INodeMap,
-    IsReadable,
-    IsWritable,
-    IsAvailable,
-    CFloatPtr,
-    CStringPtr,
-    CBooleanPtr,
-    CIntegerPtr,
-    CEnumerationPtr,
-    SpinnakerException,
-)
+import ipaddress
+import re
 
-from is_spinnaker_gateway.exceptions import StatusException
+import PySpin
 
+from is_spinnaker_gateway.conf.options_pb2 import ColorProcessingAlgorithm as CPA
 
-def is_readable(node: INode) -> None:
-    if not IsAvailable(node):
-        raise StatusException(
-            code=StatusCode.INTERNAL_ERROR,
-            message=f"Property '{node.GetName()}' not available.",
-        )
-    if not IsReadable(node):
-        raise StatusException(
-            code=StatusCode.INTERNAL_ERROR,
-            message=f"Property '{node.GetName()}' not readable.",
-        )
+ALGORITHM_MAP = {
+    CPA.Value("NEAREST_NEIGHBOR"): PySpin.SPINNAKER_COLOR_PROCESSING_ALGORITHM_NEAREST_NEIGHBOR,
+    CPA.Value("NEAREST_NEIGHBOR_AVERAGE"): PySpin.SPINNAKER_COLOR_PROCESSING_ALGORITHM_NEAREST_NEIGHBOR_AVG,
+    CPA.Value("EDGE_SENSING"): PySpin.SPINNAKER_COLOR_PROCESSING_ALGORITHM_EDGE_SENSING,
+    CPA.Value("HQ_LINEAR"): PySpin.SPINNAKER_COLOR_PROCESSING_ALGORITHM_HQ_LINEAR,
+    CPA.Value("BILINEAR"): PySpin.SPINNAKER_COLOR_PROCESSING_ALGORITHM_BILINEAR,
+    CPA.Value("DIRECTIONAL_FILTER"): PySpin.SPINNAKER_COLOR_PROCESSING_ALGORITHM_DIRECTIONAL_FILTER,
+    CPA.Value("WEIGHTED_DIRECTIONAL_FILTER"): PySpin.SPINNAKER_COLOR_PROCESSING_ALGORITHM_WEIGHTED_DIRECTIONAL_FILTER,
+    CPA.Value("RIGOROUS"): PySpin.SPINNAKER_COLOR_PROCESSING_ALGORITHM_RIGOROUS,
+    CPA.Value("IPP"): PySpin.SPINNAKER_COLOR_PROCESSING_ALGORITHM_IPP,
+}
 
 
-def is_writible(node: INode) -> None:
-    if not IsAvailable(node):
-        raise StatusException(
-            code=StatusCode.INTERNAL_ERROR,
-            message=f"Property '{node.GetName()}' not available.",
-        )
-    if not IsWritable(node):
-        raise StatusException(
-            code=StatusCode.INTERNAL_ERROR,
-            message=f"Property '{node.GetName()}' not writable.",
-        )
+def make_mac_address(integer_mac: int) -> str:
+    return ":".join(re.findall("..", "%012x" % integer_mac))
 
 
-def get_op_bool(node_map: INodeMap, name: str) -> bool:
-    node = CBooleanPtr(node_map.GetNode(name))
-    is_readable(node)
-    try:
-        return node.GetValue()
-    except SpinnakerException as ex:
-        raise StatusException(
-            code=StatusCode.INTERNAL_ERROR,
-            message=f"Failed to get property '{name}'",
-        ) from ex
+def make_ip_address(integer_ip: int) -> str:
+    return str(ipaddress.ip_address(integer_ip))
 
 
-def set_op_bool(node_map: INodeMap, name: str, value: bool) -> None:
-    node = CBooleanPtr(node_map.GetNode(name))
-    is_writible(node)
-    try:
-        node.SetValue(value)
-    except SpinnakerException as ex:
-        raise StatusException(
-            code=StatusCode.INTERNAL_ERROR,
-            message=f"Failed to set property '{name}' to '{value}'",
-        ) from ex
-
-
-def get_op_int(node_map: INodeMap, name: str) -> int:
-    node = CIntegerPtr(node_map.GetNode(name))
-    is_readable(node)
-    try:
-        return node.GetValue()
-    except SpinnakerException as ex:
-        raise StatusException(
-            code=StatusCode.INTERNAL_ERROR,
-            message=f"Failed to get property '{name}'",
-        ) from ex
-
-
-def set_op_int(node_map: INodeMap, name: str, value: int) -> None:
-    node = CIntegerPtr(node_map.GetNode(name))
-    is_writible(node)
-    min_value = node.GetMin()
-    max_value = node.GetMax()
-    if (value < min_value) or (value > max_value):
-        raise StatusException(
-            code=StatusCode.FAILED_PRECONDITION,
-            message=f"Property '{name}' must be in interval [{min_value}, {max_value}]",
-        )
-    else:
-        try:
-            node.SetValue(value)
-        except SpinnakerException as ex:
-            raise StatusException(
-                code=StatusCode.INTERNAL_ERROR,
-                message=f"Failed to set property '{name}' to '{value}'",
-            ) from ex
-
-
-def get_op_float(node_map: INodeMap, name: str) -> float:
-    node = CFloatPtr(node_map.GetNode(name))
-    is_readable(node)
-    try:
-        return node.GetValue()
-    except SpinnakerException as ex:
-        raise StatusException(
-            code=StatusCode.INTERNAL_ERROR,
-            message=f"Failed to get property '{name}'",
-        ) from ex
-
-
-def set_op_float(node_map: INodeMap, name: str, value: float) -> None:
-    node = CFloatPtr(node_map.GetNode(name))
-    is_writible(node)
-    min_value = node.GetMin()
-    max_value = node.GetMax()
-    if (value < min_value) or (value > max_value):
-        raise StatusException(
-            code=StatusCode.FAILED_PRECONDITION,
-            message=f"'Property '{name}' must be in interval [{min_value}, {max_value}]",
-        )
-    else:
-        try:
-            node.SetValue(value)
-        except SpinnakerException as ex:
-            raise StatusException(
-                code=StatusCode.INTERNAL_ERROR,
-                message=f"Failed to set property '{name}' to '{value}'",
-            ) from ex
-
-
-def get_op_str(node_map: INodeMap, name: str) -> str:
-    node = CStringPtr(node_map.GetNode(name))
-    is_readable(node)
-    try:
-        return node.GetValue()
-    except SpinnakerException as ex:
-        raise StatusException(
-            code=StatusCode.INTERNAL_ERROR,
-            message=f"Failed to get property '{name}'",
-        ) from ex
-
-
-def set_op_enum(node_map: INodeMap, name: str, value: str) -> None:
-    node = CEnumerationPtr(node_map.GetNode(name))
-    is_writible(node)
-    try:
-        node_value = node.GetEntryByName(value)
-        node.SetIntValue(node_value.GetValue())
-    except SpinnakerException as ex:
-        raise StatusException(
-            code=StatusCode.INTERNAL_ERROR,
-            message=f"Failed to set property '{name}' to '{value}'",
-        ) from ex
-
-
-def get_op_enum(node_map: INodeMap, name: str) -> str:
-    node = CEnumerationPtr(node_map.GetNode(name))
-    is_readable(node)
-    try:
-        return node.GetCurrentEntry().GetSymbolic()
-    except SpinnakerException as ex:
-        raise StatusException(
-            code=StatusCode.INTERNAL_ERROR,
-            message=f"Failed to get property '{name}'",
-        ) from ex
-
-
-def minmax_op_float(node_map: INodeMap, name: str) -> Tuple[float, float]:
-    node = CFloatPtr(node_map.GetNode(name))
-    is_readable(node)
-    try:
-        return (node.GetMin(), node.GetMax())
-    except SpinnakerException as ex:
-        raise StatusException(
-            code=StatusCode.INTERNAL_ERROR,
-            message=f"Failed to get property '{name}'",
-        ) from ex
-
-
-def minmax_op_int(node_map: INodeMap, name: str) -> Tuple[int, int]:
-    node = CIntegerPtr(node_map.GetNode(name))
-    is_readable(node)
-    try:
-        return (node.GetMin(), node.GetMax())
-    except SpinnakerException as ex:
-        raise StatusException(
-            code=StatusCode.INTERNAL_ERROR,
-            message=f"Failed to get property '{name}'",
-        ) from ex
+def make_subnet_mask(integer_mask: int) -> int:
+    return integer_mask
 
 
 def get_value(ratio: float, min_value: float, max_value: float) -> float:

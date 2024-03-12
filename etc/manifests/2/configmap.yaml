@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: is-spinnaker-gateway-2
+  namespace: default
+  labels:
+    app: is-spinnaker-gateway-2
+data:
+  options: |-
+    {
+      "rabbitmq_uri": "amqp://rabbitmq.default",
+      "zipkin_uri" : "http://zipkin.default:9411",
+      "enable_tracing": false,
+      "camera": {
+        "id": 2,
+        "ip": "10.20.6.2",
+        "algorithm": "BILINEAR",
+        "onboard_color_processing": false,
+        "packet_size": 1400,
+        "packet_delay": 6000,
+        "packet_resend": true,
+        "packet_resend_timeout": 100,
+        "packet_resend_max_requests": 10000,
+        "reverse_x": false,
+        "use_turbojpeg": true,
+        "restart_period": 3600,
+        "initial_config": {
+          "sampling": {
+            "frequency": 10.0
+          },
+          "image": {
+            "color_space": {
+              "value": "RGB"
+            },
+            "format": {
+              "format": "JPEG",
+              "compression": 0.8
+            },
+            "region": {
+              "vertices": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 1288,
+                  "y": 728
+                }
+              ]
+            }
+          },
+          "camera": {
+            "gain": {
+              "automatic": true
+            },
+            "shutter": {
+              "automatic": true
+            },
+            "brightness": {
+              "ratio": 0.0
+            },
+            "white_balance_rv": {
+              "automatic": true
+            },
+            "white_balance_bu": {
+              "automatic": true
+            }
+          }
+        }
+      }
+    }

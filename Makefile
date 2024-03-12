@@ -1,6 +1,6 @@
 USER := labvisio
 IMAGE := is-spinnaker-gateway
-VERSION := 0.2.0
+VERSION := 0.3.0
 PYTHON := python3
 SHELL := /bin/bash
 
@@ -89,7 +89,7 @@ lint:
 	@. .venv/bin/activate && (\
     	flake8 is_spinnaker_gateway; \
     	flake8 tests; \
-    	flake8 examples; \
+    	flake8 etc/examples; \
 	)
 
 run:

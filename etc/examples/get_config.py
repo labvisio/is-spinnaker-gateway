@@ -1,18 +1,20 @@
 import socket
 
-from is_wire.core import Channel, Subscription, Message
-
-from is_msgs.common_pb2 import FieldSelector
 from is_msgs.camera_pb2 import CameraConfig, CameraConfigFields
+from is_msgs.common_pb2 import FieldSelector
+from is_wire.core import Channel, Message, Subscription
 
 
-def main():
+def main() -> None:
     channel = Channel(uri="amqp://guest:guest@localhost:5672")
     subscription = Subscription(channel)
     selector = FieldSelector(fields=[CameraConfigFields.Value("ALL")])
     channel.publish(
-        Message(content=selector, reply_to=subscription),
-        topic="CameraGateway.0.GetConfig",
+        message=Message(
+            content=selector,
+            reply_to=subscription,
+        ),
+        topic="CameraGateway.1.GetConfig",
     )
     try:
         reply = channel.consume(timeout=3.0)

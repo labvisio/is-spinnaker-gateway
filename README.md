@@ -52,8 +52,8 @@ It is recommended that you use Ubuntu 22.04 for development. Also, make sure you
 
 First, make sure to download [Spinnaker SDK] for **Ubuntu 22.04**. The files are and their locations are:
 
-* **spinnaker-3.0.0.118-amd64-pkg.tar.gz**: Linux > Ubuntu 22.04
-* **spinnaker_python-3.0.0.118-cp310-cp210-linux_x86_64.tar.gz**: Linux > Ubuntu 22.04 > python
+* **spinnaker-4.0.0.116-amd64-pkg.tar.gz**: Linux > Ubuntu 22.04
+* **spinnaker_python-4.0.0.116-cp310-cp310-linux_x86_64.tar.gz**: Linux > Ubuntu 22.04 > python
 
 Then, extract and move all `.deb` and `*.whl` into `etc/spinnaker/` folder.
 

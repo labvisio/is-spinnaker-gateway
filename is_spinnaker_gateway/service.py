@@ -2,13 +2,15 @@ import sys
 
 from google.protobuf.json_format import Parse
 
-from is_spinnaker_gateway.logger import Logger
-from is_spinnaker_gateway.gateway import CameraGateway
 from is_spinnaker_gateway.conf.options_pb2 import CameraGatewayOptions
+from is_spinnaker_gateway.gateway import CameraGateway
+from is_spinnaker_gateway.logger import Logger
 
 
-def load_json(logger: Logger, # type: ignore[return]
-              path: str = "/etc/is-spinnaker-gateway/options.json") -> CameraGatewayOptions:
+def load_json(  # type: ignore[return]
+    logger: Logger,
+    path: str = "/etc/is-spinnaker-gateway/options.json",
+) -> CameraGatewayOptions:
     try:
         with open(path, 'r') as f:
             try:
@@ -36,6 +38,7 @@ def main() -> None:
         broker_uri=options.rabbitmq_uri,
         zipkin_uri=options.zipkin_uri,
         camera=options.camera,
+        enable_tracing=options.enable_tracing,
     )
     gateway.run()
 

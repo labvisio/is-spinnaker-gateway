@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: is-spinnaker-gateway-0
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: is-spinnaker-gateway-0
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: is-spinnaker-gateway-0
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      hostNetwork: True
+      dnsPolicy: "ClusterFirstWithHostNet"
+      containers:
+        - name: is-spinnaker-gateway-0
+          image: labvisio/is-spinnaker-gateway:0.3.0
+          command:
+            - "is-spinnaker-gateway"
+            - "/etc/is-spinnaker-gateway/options.json"
+          imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: "1500m"
+              memory: "1024Mi"
+            requests:
+              cpu: "1000m"
+              memory: "512Mi"
+          volumeMounts:
+            - name: options
+              mountPath: /etc/is-spinnaker-gateway/
+          env:
+            - name: LOG_LEVEL
+              value: "DEBUG"
+      volumes:
+        - name: options
+          configMap:
+            name: is-spinnaker-gateway-0
+            items:
+              - key: options
+                path: options.json
