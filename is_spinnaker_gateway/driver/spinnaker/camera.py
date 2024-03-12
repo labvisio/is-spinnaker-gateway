@@ -134,6 +134,11 @@ class SpinnakerDriver(CameraDriver):
         self._cam_info = cam_info
         attempts = 0
         not_connected = True
+        self._logger.debug("Model name: {}", cam_info["model_name"])
+        self._logger.debug("Serial number: {}", cam_info["serial_number"])
+        self._logger.debug("Link speed: {} Mb/s", cam_info["link_speed"])
+        self._logger.debug("IP address: {}", cam_info["interface"]["ip_address"])
+
         while not_connected:
             try:
                 cam_list = self._system.GetCameras()
@@ -148,10 +153,11 @@ class SpinnakerDriver(CameraDriver):
                 self._logger.warn("[Camera Initiliaze]: {}", ex)
                 time.sleep(5)
         try:
-            set_op_enum(node_map=self._camera.GetNodeMap(), name="UserSetSelector", value="Default")
+            set_op_enum(self._camera.GetNodeMap(), "UserSetSelector", "Default")
             self._camera.UserSetLoad()
-            set_op_enum(node_map=self._camera.GetNodeMap(), name="AcquisitionMode", value="Continuous")
-            set_op_enum(node_map=self._camera.GetTLStreamNodeMap(), name="StreamBufferHandlingMode", value="OldestFirst")
+            set_op_enum(self._camera.GetNodeMap(), "TriggerMode", "Off")
+            set_op_enum(self._camera.GetNodeMap(), "AcquisitionMode", "Continuous")
+            set_op_enum(self._camera.GetTLStreamNodeMap(), "StreamBufferHandlingMode", "OldestFirst")
         except (PySpin.SpinnakerException, StatusException) as ex:
             self._logger.critical("[Camera Initial Config]: {}", ex)
 
